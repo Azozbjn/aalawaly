@@ -476,7 +476,6 @@ var DM = {
 };
 
 // ── LOGIN ──
-document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 function doLogin(){
   if(document.getElementById('pw').value===PASS){
     document.getElementById('LOGIN').style.display='none';
@@ -495,6 +494,10 @@ function doLogout(){
   document.getElementById('LOGIN').style.display='flex';
   document.getElementById('pw').value='';
 }
+document.addEventListener('DOMContentLoaded',function(){
+  var pw=document.getElementById('pw');
+  if(pw) pw.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+});
 
 // ── NAV ──
 var TITLES={'pg-ov':'نظرة عامة','pg-tm':'تحليل الوقت','pg-tk':'المهام المتكررة','pg-a1':'محلل الأتمتة','pg-a2':'ملخص الوقت الضائع','pg-a3':'المستشار الاستراتيجي','pg-rs':'الإجابات الكاملة','pg-st':'الإعدادات'};
