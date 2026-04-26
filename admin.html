@@ -478,6 +478,7 @@ var DM = {
 // ── LOGIN ──
 function doLogin(){
   if(document.getElementById('pw').value===PASS){
+    localStorage.setItem('admin_logged_in','1');
     document.getElementById('LOGIN').style.display='none';
     document.getElementById('APP').style.display='block';
     var k=localStorage.getItem('or_key');
@@ -490,6 +491,7 @@ function doLogin(){
   }
 }
 function doLogout(){
+  localStorage.removeItem('admin_logged_in');
   document.getElementById('APP').style.display='none';
   document.getElementById('LOGIN').style.display='flex';
   document.getElementById('pw').value='';
@@ -497,6 +499,13 @@ function doLogout(){
 document.addEventListener('DOMContentLoaded',function(){
   var pw=document.getElementById('pw');
   if(pw) pw.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+  if(localStorage.getItem('admin_logged_in')==='1'){
+    document.getElementById('LOGIN').style.display='none';
+    document.getElementById('APP').style.display='block';
+    var k=localStorage.getItem('or_key');
+    if(k && document.getElementById('or-key')) document.getElementById('or-key').value=k;
+    loadData();
+  }
 });
 
 // ── NAV ──
@@ -783,17 +792,22 @@ async function callAI(sys,usr,outId,btnId){
     goPage('pg-st',document.getElementById('nb-st'));
     return;
   }
-  if(!ROWS.length){alert('لا توجد بيانات بعد — انتظر أن يُرسل الموظفون إجاباتهم');return;}
+  if(!ROWS.length){alert('لا توجد بيانات بعد — انتظر ان يرسل الموظفون اجاباتهم');return;}
+  // sanitize key - remove any non-ASCII chars
+  key = key.replace(/[^\x00-\x7F]/g,'').trim();
+  if(!key){alert('المفتاح يحتوي على احرف غير صحيحة. يرجى اعادة ادخاله من الاعدادات');return;}
   var out=document.getElementById(outId),btn=document.getElementById(btnId);
   out.style.display='block';
   out.innerHTML='<div class="ai-thinking"><div class="spin"></div> الذكاء الاصطناعي يحلل البيانات... قد يستغرق 15-30 ثانية</div>';
   btn.disabled=true;btn.textContent='⏳ جار التحليل...';
   try{
-    var res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'HTTP-Referer':'https://azozbjn.github.io/aalawaly','X-Title':'العوالي للتطوير العقاري'},
-      body:JSON.stringify({model:'anthropic/claude-sonnet-4-5',max_tokens:2500,messages:[{role:'system',content:sys},{role:'user',content:usr}]})
-    });
+    var hdrs = new Headers();
+    hdrs.append('Content-Type','application/json');
+    hdrs.append('Authorization','Bearer '+key);
+    hdrs.append('HTTP-Referer','https://azozbjn.github.io');
+    hdrs.append('X-Title','Aalawaly');
+    var bdy = JSON.stringify({model:'anthropic/claude-3.5-sonnet',max_tokens:2500,messages:[{role:'system',content:sys},{role:'user',content:usr}]});
+    var res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:hdrs,body:bdy});
     if(!res.ok){var err=await res.text();out.innerHTML='❌ خطأ من الخادم: '+err;btn.disabled=false;btn.textContent='▶ إعادة التشغيل';return;}
     var data=await res.json();
     if(data.choices&&data.choices[0]&&data.choices[0].message){
