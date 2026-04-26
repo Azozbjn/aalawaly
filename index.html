@@ -1078,8 +1078,7 @@ function renderReview() {
 }
 
 function submitSurvey() {
-  autoSave();
-  goTo('screen-thankyou');
+  submitSurveyToSupabase();
 }
 
 // ===== ADMIN DASHBOARD =====
@@ -1244,6 +1243,70 @@ function renderAgentList() {
     html += '<div class="agent-card"><div style="display:flex;align-items:flex-start;gap:16px"><div class="agent-icon">' + a.icon + '</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800;color:var(--text)">' + a.name + '</span><span class="tag tag-' + tc + '">' + tl + '</span></div><div style="font-size:12px;color:var(--brand-light);margin-bottom:6px;font-weight:600">' + a.dept + '</div><div style="font-size:13px;color:var(--text-muted);line-height:1.7">' + a.desc + '</div><div style="font-size:12px;color:var(--brand);margin-top:10px;font-weight:700">⏱ يوفر تقريباً ' + a.saving + '</div></div></div></div>';
   });
   el.innerHTML = html;
+}
+
+// ===== SUPABASE CONFIG =====
+// 🔧 ضع هنا بياناتك من Supabase
+var SUPABASE_URL = 'https://nmnbqgyzfzyewmqrpfvr.supabase.co';       // مثال: https://xxxx.supabase.co
+var SUPABASE_KEY = 'sb_publishable_SCWggA6lkWHHZZnsmYW4rQ_XSTR0YmA';  // المفتاح العام anon/public
+
+// ===== SUPABASE: حفظ الإجابات عند الإرسال =====
+async function saveToSupabase() {
+  try {
+    var payload = {
+      employee_name:     empData.name,
+      employee_id:       empData.empId || null,
+      job_title:         empData.title || null,
+      department:        empData.deptName || null,
+      department_key:    empData.dept || null,
+      related_depts:     empData.relatedDepts || [],
+      years_experience:  empData.exp ? parseInt(empData.exp) : null,
+      team_size:         empData.teamSize ? parseInt(empData.teamSize) : null,
+      general_answers:   answers,
+      dept_answers:      deptAnswers,
+      submitted_at:      new Date().toISOString()
+    };
+
+    var res = await fetch(SUPABASE_URL + '/rest/v1/survey_responses', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer':        'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      var err = await res.text();
+      console.error('Supabase error:', err);
+      return false;
+    }
+    return true;
+  } catch(e) {
+    console.error('Network error:', e);
+    return false;
+  }
+}
+
+// ===== تعديل submitSurvey عشان يحفظ في Supabase =====
+async function submitSurveyToSupabase() {
+  autoSave();
+
+  // أظهر loading
+  var btn = event && event.target;
+  if (btn) { btn.textContent = '⏳ جار الإرسال...'; btn.disabled = true; }
+
+  var success = await saveToSupabase();
+
+  if (success) {
+    localStorage.removeItem('alawali_survey'); // امسح المحلي بعد الإرسال
+    goTo('screen-thankyou');
+  } else {
+    alert('⚠️ حدث خطأ في الإرسال. تحقق من الاتصال وحاول مرة أخرى.\n\nإجاباتك محفوظة محلياً على جهازك.');
+    if (btn) { btn.textContent = '✓ إرسال الاستبيان'; btn.disabled = false; }
+  }
 }
 
 // ===== LOAD SAVED DATA =====
