@@ -565,10 +565,10 @@ input[type=number]{width:100px}
   <!-- TAB: OVERVIEW -->
   <div id="tab-overview">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px">
-      <div class="card stat-card"><div class="stat-num">34</div><div class="stat-label">موظف أكمل الاستبيان</div></div>
-      <div class="card stat-card"><div class="stat-num">78%</div><div class="stat-label">نسبة الإنجاز الكلية</div></div>
-      <div class="card stat-card"><div class="stat-num">10</div><div class="stat-label">إدارات مشاركة</div></div>
-      <div class="card stat-card"><div class="stat-num">412</div><div class="stat-label">مهمة موثقة</div></div>
+      <div class="card stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">موظف أكمل الاستبيان</div></div>
+      <div class="card stat-card"><div class="stat-num" id="stat-pct">0</div><div class="stat-label">نسبة الإنجاز الكلية</div></div>
+      <div class="card stat-card"><div class="stat-num" id="stat-depts">0</div><div class="stat-label">إدارات مشاركة</div></div>
+      <div class="card stat-card"><div class="stat-num" id="stat-tasks">0</div><div class="stat-label">مهمة موثقة</div></div>
       <div class="card stat-card"><div class="stat-num">6</div><div class="stat-label">مقترحات AI Agent</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap">
@@ -1091,156 +1091,473 @@ function switchTab(btn, tabId) {
   });
 }
 
-function renderAdmin() {
-  renderDeptProgressChart();
-  renderWaitingChart();
-  renderTimeChart();
-  renderReportsChart();
-  renderEmailChart();
-  renderTaskTypesChart();
-  renderAutomationChart();
-  renderAgentList();
-}
 
-var MOCK_DEPTS = [
-  {name:'المبيعات',pct:95,count:8},{name:'التطوير والتصميم',pct:90,count:7},
-  {name:'المشاريع',pct:85,count:6},{name:'المالية',pct:80,count:5},
-  {name:'التسويق',pct:75,count:4},{name:'القانونية',pct:60,count:3},
-  {name:'الاستثمار',pct:55,count:3},{name:'الصيانة',pct:50,count:2},
-  {name:'الضمان',pct:45,count:2},{name:'IT',pct:40,count:1}
+// ===== TIME ACTIVITIES KEYS (نفس ترتيب الجدول في الاستبيان) =====
+var TIME_ACT_LABELS = [
+  'قراءة الإيميلات والرد عليها',
+  'إعداد التقارير والوثائق',
+  'الاجتماعات (حضوراً وتحضيراً)',
+  'التواصل مع إدارات أخرى وانتظار ردودها',
+  'نقل بيانات بين أنظمة أو ملفات',
+  'مراجعة مستندات وعقود ومخططات',
+  'متابعة مهام معلقة وتذكير الآخرين',
+  'العمل التخصصي الفعلي في صلب مهمتك',
+  'أخرى'
 ];
 
-function renderDeptProgressChart() {
+// ===== FETCH ALL RESPONSES FROM SUPABASE =====
+async function fetchResponses() {
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/survey_responses?select=*&order=submitted_at.desc', {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e) {
+    console.error('fetch error:', e);
+    return [];
+  }
+}
+
+// ===== MAIN ADMIN RENDER =====
+async function renderAdmin() {
+  // أظهر loading في كل الأماكن
+  ['dept-prog-chart','waiting-chart','time-chart','reports-chart',
+   'email-chart','task-types-chart','automation-chart','agent-list'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center">⏳ جار تحميل البيانات...</div>';
+  });
+  // أظهر الأرقام فارغة
+  ['stat-total','stat-pct','stat-depts','stat-tasks'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.textContent = '...';
+  });
+
+  var rows = await fetchResponses();
+
+  if (rows.length === 0) {
+    renderEmptyState();
+    return;
+  }
+
+  renderStats(rows);
+  renderDeptProgressChart(rows);
+  renderWaitingChart(rows);
+  renderTimeChart(rows);
+  renderEmailsChart(rows);
+  renderTaskTypesChart(rows);
+  renderAutomationChart(rows);
+  renderAgentList(rows);
+}
+
+// ===== EMPTY STATE =====
+function renderEmptyState() {
+  var msg = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted)"><div style="font-size:40px;margin-bottom:12px">📭</div><div style="font-size:15px;font-weight:600;margin-bottom:8px">لا توجد بيانات بعد</div><div style="font-size:13px">سيظهر هنا تحليل الإجابات بعد أن يبدأ الموظفون بملء الاستبيان</div></div>';
+  ['dept-prog-chart','waiting-chart','time-chart','reports-chart',
+   'email-chart','task-types-chart','automation-chart'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.innerHTML = msg;
+  });
+  ['stat-total','stat-pct','stat-depts','stat-tasks'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.textContent = '0';
+  });
+  renderAgentList([]);
+}
+
+// ===== STATS CARDS =====
+function renderStats(rows) {
+  var total = rows.length;
+
+  // الإدارات الفريدة
+  var depts = {};
+  rows.forEach(function(r){ if(r.department) depts[r.department] = true; });
+  var deptCount = Object.keys(depts).length;
+
+  // عدد الأسئلة الكلية الموثقة تقريباً
+  var taskCount = rows.reduce(function(acc, r){
+    var g = r.general_answers ? Object.keys(r.general_answers).length : 0;
+    var d = r.dept_answers ? Object.keys(r.dept_answers).length : 0;
+    return acc + g + d;
+  }, 0);
+
+  var el = document.getElementById('stat-total'); if(el) el.textContent = total;
+  var el2 = document.getElementById('stat-pct'); if(el2) el2.textContent = total + ' مكتمل';
+  var el3 = document.getElementById('stat-depts'); if(el3) el3.textContent = deptCount;
+  var el4 = document.getElementById('stat-tasks'); if(el4) el4.textContent = taskCount;
+}
+
+// ===== DEPT PROGRESS =====
+function renderDeptProgressChart(rows) {
   var el = document.getElementById('dept-prog-chart');
-  if (!el) return;
+  if(!el) return;
+
+  var deptMap = {};
+  rows.forEach(function(r){
+    var d = r.department || 'غير محدد';
+    deptMap[d] = (deptMap[d]||0) + 1;
+  });
+
+  var total = rows.length;
+  var sorted = Object.keys(deptMap).sort(function(a,b){ return deptMap[b]-deptMap[a]; });
+
+  if(sorted.length === 0){ el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">لا توجد بيانات</div>'; return; }
+
   var html = '';
-  MOCK_DEPTS.forEach(function(d) {
-    html += '<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-muted)">' + d.name + '</span><span style="color:var(--brand);font-weight:700">' + d.pct + '% (' + d.count + ' موظفين)</span></div><div class="dept-bar-bg"><div class="dept-bar" style="width:' + d.pct + '%"></div></div></div>';
+  sorted.forEach(function(dept){
+    var count = deptMap[dept];
+    var pct = Math.round((count / total) * 100);
+    html += '<div style="margin:10px 0">'
+      + '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">'
+      + '<span style="color:var(--text-muted)">' + dept + '</span>'
+      + '<span style="color:var(--brand);font-weight:700">' + count + ' موظف (' + pct + '%)</span>'
+      + '</div>'
+      + '<div class="dept-bar-bg"><div class="dept-bar" style="width:' + pct + '%"></div></div>'
+      + '</div>';
   });
   el.innerHTML = html;
 }
 
-function renderWaitingChart() {
+// ===== WAITING / BLOCKING DEPTS =====
+function renderWaitingChart(rows) {
   var el = document.getElementById('waiting-chart');
-  if (!el) return;
-  var data = [
-    {name:'المالية',score:42,tag:'high',tagLabel:'تأخير عالٍ'},
-    {name:'القانونية',score:38,tag:'high',tagLabel:'تأخير عالٍ'},
-    {name:'التسويق',score:31,tag:'med',tagLabel:'متوسط'},
-    {name:'IT',score:28,tag:'med',tagLabel:'متوسط'},
-    {name:'المشاريع',score:22,tag:'low',tagLabel:'منخفض'},
-    {name:'التطوير',score:18,tag:'low',tagLabel:'منخفض'}
-  ];
+  if(!el) return;
+
+  // نحسب: كل موظف ذكر إدارة كـ "related dept" — كلما زاد الذكر كلما زاد الاعتماد
+  var deptMentions = {};
+  rows.forEach(function(r){
+    var rd = r.related_depts || [];
+    rd.forEach(function(d){ deptMentions[d] = (deptMentions[d]||0) + 1; });
+
+    // أيضاً نحسب من إجابة سؤال الانتظار (q22) إذا وُجدت
+    if(r.general_answers){
+      var waitAns = r.general_answers['ans_q22'] || '';
+      // كل إدارة مذكورة في نص الإجابة نضيف لها نقطة
+      var deptNames = ['المالية','القانونية','التسويق','IT','المشاريع','التطوير','المبيعات','الصيانة','الضمان','الاستثمار'];
+      deptNames.forEach(function(d){
+        if(waitAns.includes(d)) deptMentions[d] = (deptMentions[d]||0) + 1;
+      });
+    }
+  });
+
+  var sorted = Object.keys(deptMentions).sort(function(a,b){ return deptMentions[b]-deptMentions[a]; }).slice(0,6);
+
+  if(sorted.length === 0){ el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">لا توجد بيانات كافية</div>'; return; }
+
+  var max = deptMentions[sorted[0]];
   var html = '';
-  data.forEach(function(d) {
-    html += '<div class="card" style="padding:16px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:14px;font-weight:700;color:var(--text)">' + d.name + '</span><span class="tag tag-' + d.tag + '">' + d.tagLabel + '</span></div><div style="font-size:28px;font-weight:800;color:var(--brand)">' + d.score + '<span style="font-size:12px;color:var(--text-muted);font-weight:400"> إشارة</span></div></div>';
+  sorted.forEach(function(dept){
+    var score = deptMentions[dept];
+    var pct = max > 0 ? Math.round((score/max)*100) : 0;
+    var tag = pct >= 70 ? 'high' : pct >= 40 ? 'med' : 'low';
+    var tagLabel = pct >= 70 ? 'تأخير عالٍ' : pct >= 40 ? 'متوسط' : 'منخفض';
+    html += '<div class="card" style="padding:16px;border-radius:12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      + '<span style="font-size:14px;font-weight:700;color:var(--text)">' + dept + '</span>'
+      + '<span class="tag tag-' + tag + '">' + tagLabel + '</span>'
+      + '</div>'
+      + '<div style="font-size:28px;font-weight:800;color:var(--brand)">' + score
+      + '<span style="font-size:12px;color:var(--text-muted);font-weight:400"> إشارة</span></div>'
+      + '</div>';
   });
   el.innerHTML = html;
 }
 
-function renderTimeChart() {
+// ===== TIME DISTRIBUTION =====
+function renderTimeChart(rows) {
   var el = document.getElementById('time-chart');
-  if (!el) return;
-  var data = [
-    {label:'اجتماعات',val:2.8,max:3},{label:'إيميلات',val:2.1,max:3},
-    {label:'تقارير يدوية',val:1.9,max:3},{label:'متابعة ومراسلات',val:1.7,max:3},
-    {label:'نقل بيانات',val:1.4,max:3},{label:'مراجعة مستندات',val:1.2,max:3},
-    {label:'عمل تخصصي',val:0.9,max:3}
-  ];
+  if(!el) return;
+
+  // نجمع متوسط ساعات كل نشاط من جدول توزيع اليوم (q07)
+  var totals = new Array(TIME_ACT_LABELS.length).fill(0);
+  var counts = new Array(TIME_ACT_LABELS.length).fill(0);
+
+  rows.forEach(function(r){
+    if(!r.general_answers) return;
+    for(var i = 0; i < TIME_ACT_LABELS.length; i++){
+      var key = 'ans_q07_t' + i;
+      var val = parseFloat(r.general_answers[key]);
+      if(!isNaN(val) && val > 0){
+        totals[i] += val;
+        counts[i]++;
+      }
+    }
+  });
+
+  // احسب المتوسطات
+  var data = TIME_ACT_LABELS.map(function(label, i){
+    var avg = counts[i] > 0 ? (totals[i] / counts[i]) : 0;
+    return { label: label, val: Math.round(avg * 10) / 10 };
+  }).filter(function(d){ return d.val > 0; })
+    .sort(function(a,b){ return b.val - a.val; });
+
+  if(data.length === 0){
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">لا توجد بيانات كافية — يحتاج الموظفون لملء جدول توزيع اليوم</div>';
+    return;
+  }
+
+  var max = data[0].val;
   var html = '';
-  data.forEach(function(d) {
-    var w = Math.round((d.val / d.max) * 100);
-    html += '<div class="bar-wrap"><div class="bar-label">' + d.label + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + w + '%"></div></div><div class="bar-val">' + d.val + ' س</div></div>';
+  data.forEach(function(d){
+    var w = max > 0 ? Math.round((d.val/max)*100) : 0;
+    html += '<div class="bar-wrap">'
+      + '<div class="bar-label" style="min-width:180px">' + d.label + '</div>'
+      + '<div class="bar-bg"><div class="bar-fill" style="width:' + w + '%"></div></div>'
+      + '<div class="bar-val">' + d.val + ' س</div>'
+      + '</div>';
   });
   el.innerHTML = html;
 }
 
-function renderReportsChart() {
-  var el = document.getElementById('reports-chart');
-  if (!el) return;
-  var data = [
-    {label:'تقرير التقدم الأسبوعي',val:28},{label:'التقرير المالي الشهري',val:22},
-    {label:'تقرير المبيعات',val:20},{label:'تقرير الصيانة',val:15},
-    {label:'تقرير الضمان',val:12},{label:'تقرير لجان الاستثمار',val:9}
-  ];
-  var html = '';
-  data.forEach(function(d) {
-    var w = Math.round((d.val / 28) * 100);
-    html += '<div class="bar-wrap"><div class="bar-label" style="min-width:160px">' + d.label + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + w + '%"></div></div><div class="bar-val">' + d.val + ' موظف</div></div>';
-  });
-  el.innerHTML = html;
-}
-
-function renderEmailChart() {
+// ===== EMAILS ANALYSIS =====
+function renderEmailsChart(rows) {
   var el = document.getElementById('email-chart');
-  if (!el) return;
-  var data = [
-    {label:'طلبات موافقة وتصديق',val:85,tag:'high'},{label:'استفسارات عملاء',val:72,tag:'high'},
-    {label:'تنسيق داخلي بين إدارات',val:68,tag:'high'},{label:'تقارير حالة دورية',val:54,tag:'med'},
-    {label:'طلبات مستندات',val:48,tag:'med'},{label:'متابعة مهام معلقة',val:44,tag:'med'},
-    {label:'إشعارات تعاقدية',val:32,tag:'low'}
-  ];
-  var html = '';
-  data.forEach(function(d) {
-    var w = Math.round((d.val / 85) * 100);
-    var tl = d.tag==='high'?'أتمتة عالية':d.tag==='med'?'أتمتة متوسطة':'أتمتة منخفضة';
-    html += '<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><div style="min-width:160px;font-size:13px;color:var(--text-muted)">' + d.label + '</div><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:' + w + '%"></div></div><div style="min-width:32px;font-size:13px;font-weight:700;color:var(--brand)">' + d.val + '</div><span class="tag tag-' + d.tag + '">' + tl + '</span></div>';
+  if(!el) return;
+
+  // نحسب متوسط عدد الإيميلات اليومية
+  var totalEmails = 0, countEmails = 0;
+  var totalNeedAction = 0, countAction = 0;
+
+  // نحلل نص إجابة q15 (أنواع الإيميلات المتكررة) كلمات شائعة
+  var keywords = {
+    'طلبات موافقة': ['موافقة','اعتماد','تصديق'],
+    'استفسارات عملاء': ['عميل','استفسار','سؤال','مشتري'],
+    'تنسيق داخلي': ['تنسيق','إدارة','داخلي','قسم'],
+    'تقارير دورية': ['تقرير','أسبوعي','شهري','دوري'],
+    'طلبات مستندات': ['مستند','وثيقة','ملف','مرفق'],
+    'متابعة معلقة': ['متابعة','انتظار','معلق','لم يرد']
+  };
+
+  var kwCounts = {};
+  Object.keys(keywords).forEach(function(k){ kwCounts[k] = 0; });
+
+  rows.forEach(function(r){
+    if(!r.general_answers) return;
+
+    var emailCount = parseInt(r.general_answers['ans_q14_f0']);
+    if(!isNaN(emailCount)){ totalEmails += emailCount; countEmails++; }
+
+    var actionCount = parseInt(r.general_answers['ans_q14_f1']);
+    if(!isNaN(actionCount)){ totalNeedAction += actionCount; countAction++; }
+
+    var emailText = (r.general_answers['ans_q15'] || '') + ' ' + (r.general_answers['ans_q16'] || '');
+    emailText = emailText.toLowerCase();
+    Object.keys(keywords).forEach(function(k){
+      keywords[k].forEach(function(kw){
+        if(emailText.includes(kw)) kwCounts[k]++;
+      });
+    });
   });
+
+  var avgEmails = countEmails > 0 ? Math.round(totalEmails/countEmails) : 0;
+  var avgAction = countAction > 0 ? Math.round(totalNeedAction/countAction) : 0;
+
+  var sorted = Object.keys(kwCounts).filter(function(k){ return kwCounts[k]>0; })
+    .sort(function(a,b){ return kwCounts[b]-kwCounts[a]; });
+
+  var html = '';
+
+  if(avgEmails > 0){
+    html += '<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">'
+      + '<div style="background:var(--brand-ultra);border-radius:10px;padding:12px 20px;text-align:center">'
+      + '<div style="font-size:24px;font-weight:800;color:var(--brand)">' + avgEmails + '</div>'
+      + '<div style="font-size:12px;color:var(--text-muted)">متوسط إيميلات يومياً</div></div>'
+      + '<div style="background:var(--brand-ultra);border-radius:10px;padding:12px 20px;text-align:center">'
+      + '<div style="font-size:24px;font-weight:800;color:var(--brand)">' + avgAction + '</div>'
+      + '<div style="font-size:12px;color:var(--text-muted)">منها يحتاج إجراء</div></div>'
+      + '</div>';
+  }
+
+  if(sorted.length === 0){
+    html += '<div style="color:var(--text-muted);font-size:13px;padding:8px">لا توجد بيانات كافية لتحليل أنواع الإيميلات</div>';
+  } else {
+    var maxVal = kwCounts[sorted[0]];
+    sorted.forEach(function(k){
+      var w = maxVal > 0 ? Math.round((kwCounts[k]/maxVal)*100) : 0;
+      var tag = w>=70?'high':w>=40?'med':'low';
+      var tl = w>=70?'أتمتة عالية':w>=40?'أتمتة متوسطة':'أتمتة منخفضة';
+      html += '<div style="display:flex;align-items:center;gap:10px;margin:8px 0">'
+        + '<div style="min-width:160px;font-size:13px;color:var(--text-muted)">' + k + '</div>'
+        + '<div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:' + w + '%"></div></div>'
+        + '<div style="min-width:28px;font-size:13px;font-weight:700;color:var(--brand)">' + kwCounts[k] + '</div>'
+        + '<span class="tag tag-' + tag + '">' + tl + '</span></div>';
+    });
+  }
   el.innerHTML = html;
 }
 
-function renderTaskTypesChart() {
+// ===== TASK TYPES (من meta البيانات) =====
+function renderTaskTypesChart(rows) {
   var el = document.getElementById('task-types-chart');
-  if (!el) return;
-  var types = [
-    {label:'متابعة',val:95},{label:'بريد',val:88},{label:'تقرير',val:82},
-    {label:'تنسيق',val:76},{label:'إدخال بيانات',val:71},{label:'اجتماع',val:68},
-    {label:'موافقة',val:62},{label:'تحليل',val:45},{label:'قرار',val:38}
-  ];
+  if(!el) return;
+
+  // نحلل نصوص الإجابات لاستخراج أنواع المهام
+  var typeKeywords = {
+    'متابعة':    ['متابعة','تذكير','معلق','لم يكتمل'],
+    'بريد':      ['إيميل','بريد','رسالة','مراسلة'],
+    'تقرير':     ['تقرير','إعداد','توثيق','تسجيل'],
+    'تنسيق':     ['تنسيق','تواصل','ربط','اجتماع'],
+    'إدخال بيانات':['إدخال','نقل','تعبئة','نسخ','تحديث'],
+    'موافقة':    ['موافقة','اعتماد','توقيع','مراجعة'],
+    'تحليل':     ['تحليل','دراسة','تقييم','مقارنة'],
+    'قرار':      ['قرار','اختيار','تحديد','إقرار']
+  };
+
+  var typeCounts = {};
+  Object.keys(typeKeywords).forEach(function(t){ typeCounts[t] = 0; });
+
+  rows.forEach(function(r){
+    if(!r.general_answers) return;
+    // نجمع كل النصوص من الإجابات
+    var allText = Object.values(r.general_answers).filter(function(v){ return typeof v === 'string'; }).join(' ');
+    Object.keys(typeKeywords).forEach(function(type){
+      typeKeywords[type].forEach(function(kw){
+        if(allText.includes(kw)) typeCounts[type]++;
+      });
+    });
+  });
+
+  var total = rows.length || 1;
+  var sorted = Object.keys(typeCounts).filter(function(t){ return typeCounts[t]>0; })
+    .sort(function(a,b){ return typeCounts[b]-typeCounts[a]; });
+
+  if(sorted.length === 0){
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">لا توجد بيانات كافية</div>';
+    return;
+  }
+
   var html = '<div style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0">';
-  types.forEach(function(t) {
-    var op = 0.35 + (t.val / 100) * 0.65;
-    html += '<div style="background:rgba(140,97,73,' + op.toFixed(2) + ');color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600">' + t.label + ' <span style="opacity:0.75;font-size:12px">(' + t.val + '%)</span></div>';
+  var maxVal = typeCounts[sorted[0]];
+  sorted.forEach(function(t){
+    var pct = Math.round((typeCounts[t]/maxVal)*100);
+    var op = (0.35 + (pct/100)*0.65).toFixed(2);
+    var count = typeCounts[t];
+    html += '<div style="background:rgba(140,97,73,' + op + ');color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600">'
+      + t + ' <span style="opacity:0.75;font-size:12px">(' + count + ')</span></div>';
   });
   html += '</div>';
   el.innerHTML = html;
 }
 
-function renderAutomationChart() {
+// ===== AUTOMATION OPPORTUNITIES =====
+function renderAutomationChart(rows) {
   var el = document.getElementById('automation-chart');
-  if (!el) return;
-  var data = [
-    {dept:'المبيعات',score:92},{dept:'التسويق',score:88},{dept:'المشاريع',score:85},
-    {dept:'الصيانة',score:82},{dept:'IT',score:78},{dept:'الضمان',score:75},
-    {dept:'القانونية',score:65},{dept:'المالية',score:60},{dept:'الاستثمار',score:45},
-    {dept:'التطوير والتصميم',score:38}
-  ];
+  if(!el) return;
+
+  // قواعد حساب قابلية الأتمتة بناءً على الإجابات الفعلية
+  // كلما كان الموظف يذكر: تكرار عالٍ + نقل بيانات + تقارير يدوية = نسبة أعلى
+  var deptScores = {};
+  var deptCounts = {};
+
+  rows.forEach(function(r){
+    var dept = r.department || 'غير محدد';
+    if(!deptScores[dept]){ deptScores[dept]=0; deptCounts[dept]=0; }
+
+    var score = 0;
+    var g = r.general_answers || {};
+
+    // نقل بيانات يدوي؟
+    var dataTransfer = g['ans_q12_f0'] || '';
+    if(dataTransfer.length > 5) score += 25;
+
+    // كم مرة أسبوعياً؟
+    var freq = parseInt(g['ans_q12_f1']);
+    if(!isNaN(freq) && freq >= 3) score += 15;
+
+    // تقارير دورية؟
+    var reports = g['ans_q13'] || '';
+    if(reports.length > 20) score += 20;
+
+    // إيميلات متكررة بنفس الرد؟
+    var sameReply = g['ans_q16'] || '';
+    if(sameReply.length > 10) score += 20;
+
+    // مهام أسبوعية متكررة؟
+    var routine = g['ans_q10'] || '';
+    if(routine.length > 20) score += 20;
+
+    deptScores[dept] += Math.min(score, 100);
+    deptCounts[dept]++;
+  });
+
+  var depts = Object.keys(deptScores);
+  if(depts.length === 0){
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">لا توجد بيانات كافية</div>';
+    return;
+  }
+
+  var results = depts.map(function(d){
+    return { dept:d, score: Math.round(deptScores[d]/deptCounts[d]) };
+  }).sort(function(a,b){ return b.score-a.score; });
+
   var html = '';
-  data.forEach(function(d) {
+  results.forEach(function(d){
     var tag = d.score>=75?'high':d.score>=50?'med':'low';
     var tl = d.score>=75?'فرصة عالية':d.score>=50?'فرصة متوسطة':'فرصة محدودة';
-    html += '<div class="bar-wrap"><div class="bar-label">' + d.dept + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + d.score + '%"></div></div><div class="bar-val">' + d.score + '%</div><span class="tag tag-' + tag + '">' + tl + '</span></div>';
+    html += '<div class="bar-wrap">'
+      + '<div class="bar-label">' + d.dept + '</div>'
+      + '<div class="bar-bg"><div class="bar-fill" style="width:' + d.score + '%"></div></div>'
+      + '<div class="bar-val">' + d.score + '%</div>'
+      + '<span class="tag tag-' + tag + '">' + tl + '</span>'
+      + '</div>';
   });
   el.innerHTML = html;
 }
 
-var AI_AGENTS = [
-  {icon:'📧',name:'وكيل الإيميل الذكي',dept:'جميع الإدارات',desc:'يصنف الإيميلات الواردة، يقترح ردوداً جاهزة للأنواع المتكررة، ويُذكّر بالمعلقة تلقائياً',priority:'high',saving:'2.1 ساعة/يوم'},
-  {icon:'📊',name:'وكيل التقارير التلقائية',dept:'المشاريع، المالية، المبيعات',desc:'يجمع البيانات من مصادرها ويولّد تقارير أسبوعية وشهرية تلقائياً دون تدخل يدوي',priority:'high',saving:'1.9 ساعة/يوم'},
-  {icon:'🔁',name:'وكيل نقل البيانات',dept:'IT، المشاريع، المالية',desc:'يلغي النقل اليدوي للبيانات بين الأنظمة بتوصيلها مباشرة وتحديثها في الوقت الفعلي',priority:'high',saving:'1.4 ساعة/يوم'},
-  {icon:'💬',name:'وكيل استفسارات العملاء',dept:'المبيعات، الضمان',desc:'يرد على الأسئلة المتكررة، يرسل المستندات المطلوبة، ويجدول المواعيد تلقائياً',priority:'high',saving:'1.2 ساعة/يوم'},
-  {icon:'📋',name:'وكيل متابعة المهام المعلقة',dept:'جميع الإدارات',desc:'يتابع المهام المعلقة، يرسل تذكيرات للمعنيين، ويصدر تقرير الحالة الأسبوعي',priority:'med',saving:'1.7 ساعة/يوم'},
-  {icon:'⚖️',name:'وكيل القوالب القانونية',dept:'القانونية',desc:'يولّد مسودات الخطابات والعقود المتكررة تلقائياً بإدخال بيانات بسيطة فقط',priority:'med',saving:'0.8 ساعة/يوم'}
-];
-
-function renderAgentList() {
+// ===== AI AGENTS (ثابتة لكنها تستند على الإجابات) =====
+function renderAgentList(rows) {
   var el = document.getElementById('agent-list');
-  if (!el) return;
+  if(!el) return;
+
+  var agents = [
+    {icon:'📧',name:'وكيل الإيميل الذكي',dept:'جميع الإدارات',desc:'يصنف الإيميلات الواردة ويقترح ردوداً جاهزة للأنواع المتكررة',priority:'high'},
+    {icon:'📊',name:'وكيل التقارير التلقائية',dept:'المشاريع، المالية، المبيعات',desc:'يجمع البيانات من مصادرها ويولّد التقارير الدورية تلقائياً',priority:'high'},
+    {icon:'🔁',name:'وكيل نقل البيانات',dept:'IT، المشاريع، المالية',desc:'يلغي النقل اليدوي للبيانات بين الأنظمة',priority:'high'},
+    {icon:'💬',name:'وكيل استفسارات العملاء',dept:'المبيعات، الضمان',desc:'يرد على الأسئلة المتكررة ويرسل المستندات تلقائياً',priority:'high'},
+    {icon:'📋',name:'وكيل متابعة المهام المعلقة',dept:'جميع الإدارات',desc:'يتابع المهام المعلقة ويرسل تذكيرات للمعنيين',priority:'med'},
+    {icon:'⚖️',name:'وكيل القوالب القانونية',dept:'القانونية',desc:'يولّد مسودات الخطابات المتكررة تلقائياً',priority:'med'}
+  ];
+
+  // إذا في بيانات — احسب الوقت الفعلي الموفَّر
+  var avgEmailTime = 0, avgReportTime = 0, avgTransferTime = 0;
+  if(rows.length > 0){
+    var emailMins = [], reportMins = [], transferMins = [];
+    rows.forEach(function(r){
+      var g = r.general_answers || {};
+      var em = parseInt(g['ans_q14_f2']); if(!isNaN(em)) emailMins.push(em);
+      var tm = parseFloat(g['ans_q12_f2']); if(!isNaN(tm)) transferMins.push(tm);
+    });
+    if(emailMins.length) avgEmailTime = Math.round(emailMins.reduce(function(a,b){return a+b},0)/emailMins.length);
+    if(transferMins.length) avgTransferTime = Math.round(transferMins.reduce(function(a,b){return a+b},0)/transferMins.length);
+  }
+
+  var savings = [
+    avgEmailTime > 0 ? avgEmailTime + ' دقيقة/يوم' : '~60 دقيقة/يوم',
+    '~90 دقيقة/أسبوع',
+    avgTransferTime > 0 ? avgTransferTime + ' دقيقة/مرة' : '~45 دقيقة/يوم',
+    '~30 دقيقة/يوم',
+    '~60 دقيقة/أسبوع',
+    '~40 دقيقة/خطاب'
+  ];
+
   var html = '';
-  AI_AGENTS.forEach(function(a) {
-    var tl = a.priority === 'high' ? 'أولوية عالية' : 'أولوية متوسطة';
-    var tc = a.priority === 'high' ? 'high' : 'med';
-    html += '<div class="agent-card"><div style="display:flex;align-items:flex-start;gap:16px"><div class="agent-icon">' + a.icon + '</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800;color:var(--text)">' + a.name + '</span><span class="tag tag-' + tc + '">' + tl + '</span></div><div style="font-size:12px;color:var(--brand-light);margin-bottom:6px;font-weight:600">' + a.dept + '</div><div style="font-size:13px;color:var(--text-muted);line-height:1.7">' + a.desc + '</div><div style="font-size:12px;color:var(--brand);margin-top:10px;font-weight:700">⏱ يوفر تقريباً ' + a.saving + '</div></div></div></div>';
+  agents.forEach(function(a, i){
+    var tl = a.priority==='high'?'أولوية عالية':'أولوية متوسطة';
+    var tc = a.priority==='high'?'high':'med';
+    html += '<div class="agent-card">'
+      + '<div style="display:flex;align-items:flex-start;gap:16px">'
+      + '<div class="agent-icon">' + a.icon + '</div>'
+      + '<div style="flex:1">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">'
+      + '<span style="font-size:15px;font-weight:800;color:var(--text)">' + a.name + '</span>'
+      + '<span class="tag tag-' + tc + '">' + tl + '</span></div>'
+      + '<div style="font-size:12px;color:var(--brand-light);margin-bottom:6px;font-weight:600">' + a.dept + '</div>'
+      + '<div style="font-size:13px;color:var(--text-muted);line-height:1.7">' + a.desc + '</div>'
+      + '<div style="font-size:12px;color:var(--brand);margin-top:10px;font-weight:700">⏱ يوفر تقريباً ' + savings[i] + '</div>'
+      + '</div></div></div>';
   });
   el.innerHTML = html;
 }
