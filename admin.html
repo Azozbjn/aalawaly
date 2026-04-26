@@ -806,7 +806,7 @@ async function callAI(sys,usr,outId,btnId){
     hdrs.append('Authorization','Bearer '+key);
     hdrs.append('HTTP-Referer','https://azozbjn.github.io');
     hdrs.append('X-Title','Aalawaly');
-    var bdy = JSON.stringify({model:'meta-llama/llama-3.1-8b-instruct:free',max_tokens:2500,messages:[{role:'system',content:sys},{role:'user',content:usr}]});
+    var bdy = JSON.stringify({model:'meta-llama/llama-3.3-70b-instruct:free',max_tokens:2500,messages:[{role:'system',content:sys},{role:'user',content:usr}]});
     var res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:hdrs,body:bdy});
     if(!res.ok){var err=await res.text();out.innerHTML='❌ خطأ من الخادم: '+err;btn.disabled=false;btn.textContent='▶ إعادة التشغيل';return;}
     var data=await res.json();
