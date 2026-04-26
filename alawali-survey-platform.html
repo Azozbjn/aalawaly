@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>استبيان تحليل الوقت — شركة العوالي للتطوير العقاري</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Cairo',sans-serif;
+  direction:rtl;
+  background:linear-gradient(135deg,#f9f5f1 0%,#f2ece5 40%,#ede5dc 100%);
+  min-height:100vh;
+  color:#2d231c;
+}
+
+:root{
+  --brand:#8C6149;
+  --brand-dark:#7a5540;
+  --brand-light:#b89a87;
+  --brand-ultra:#f5ede7;
+  --glass:rgba(255,255,255,0.75);
+  --glass-border:rgba(255,255,255,0.95);
+  --shadow:0 8px 40px rgba(140,97,73,0.13);
+  --shadow-lg:0 16px 60px rgba(140,97,73,0.18);
+  --text:#2d231c;
+  --text-muted:#7a6558;
+  --text-light:#a99080;
+  --radius:20px;
+  --radius-sm:12px;
+  --radius-xs:8px;
+}
+
+/* ===== SCREENS ===== */
+.screen{display:none;min-height:100vh;padding:32px 20px;align-items:flex-start;justify-content:center}
+.screen.active{display:flex;flex-direction:column}
+
+/* ===== GLASS CARD ===== */
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1.5px solid var(--glass-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.card-lg{padding:48px 44px}
+.card-md{padding:36px 36px}
+.card-sm{padding:24px 24px}
+
+/* ===== BUTTONS ===== */
+.btn{
+  font-family:'Cairo',sans-serif;
+  font-size:15px;
+  font-weight:600;
+  border-radius:var(--radius-sm);
+  padding:13px 28px;
+  cursor:pointer;
+  transition:all 0.22s ease;
+  border:1.5px solid;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  border-color:var(--brand);
+  box-shadow:0 4px 18px rgba(140,97,73,0.28);
+}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(140,97,73,0.38)}
+.btn-ghost{
+  background:rgba(255,255,255,0.7);
+  color:var(--brand);
+  border-color:rgba(140,97,73,0.25);
+}
+.btn-ghost:hover{background:var(--brand-ultra);border-color:var(--brand-light);transform:translateY(-1px)}
+.btn-text{background:transparent;color:var(--text-muted);border-color:transparent;font-size:13px;padding:8px 14px}
+.btn-text:hover{color:var(--brand);background:var(--brand-ultra)}
+.btn-lg{font-size:17px;padding:16px 48px;border-radius:16px}
+.btn-sm{font-size:13px;padding:9px 18px;border-radius:10px}
+
+/* ===== FORM ELEMENTS ===== */
+.form-group{margin-bottom:18px}
+.form-group label{
+  font-size:13px;font-weight:700;
+  color:var(--text-muted);
+  display:block;margin-bottom:7px;
+  letter-spacing:0.3px;
+}
+input[type=text],input[type=number],select,textarea{
+  font-family:'Cairo',sans-serif;
+  width:100%;
+  padding:13px 16px;
+  border:1.5px solid rgba(140,97,73,0.18);
+  border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.82);
+  color:var(--text);
+  font-size:15px;
+  outline:none;
+  transition:all 0.2s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--brand);
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(140,97,73,0.1);
+}
+textarea{min-height:110px;resize:vertical;line-height:1.75}
+select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%238C6149' fill='none' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:left 14px center;
+  padding-left:40px;
+  cursor:pointer;
+}
+input[type=number]{width:100px}
+
+/* ===== CHIPS ===== */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{
+  padding:8px 16px;
+  border-radius:99px;
+  border:1.5px solid rgba(140,97,73,0.2);
+  background:rgba(255,255,255,0.65);
+  font-size:13px;font-weight:500;
+  cursor:pointer;
+  transition:all 0.2s;
+  user-select:none;
+  font-family:'Cairo',sans-serif;
+}
+.chip:hover{background:var(--brand-ultra);border-color:var(--brand-light)}
+.chip.selected{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 2px 10px rgba(140,97,73,0.3)}
+
+/* ===== PROGRESS ===== */
+.progress-wrap{width:100%;background:rgba(140,97,73,0.1);border-radius:99px;height:5px}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-light),var(--brand));transition:width 0.5s cubic-bezier(0.4,0,0.2,1)}
+
+/* ===== DIVIDER ===== */
+.divider{
+  width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(140,97,73,0.25) 30%,rgba(140,97,73,0.25) 70%,transparent);
+  margin:28px 0;
+}
+
+/* ===== SECTION LABEL ===== */
+.section-label{
+  font-size:11px;font-weight:800;
+  letter-spacing:2px;
+  color:var(--brand);
+  text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(140,97,73,0.2)}
+
+/* ===== TABLE ===== */
+.time-table{width:100%;border-collapse:collapse;font-size:14px}
+.time-table th{
+  background:var(--brand-ultra);
+  color:var(--brand);
+  padding:11px 16px;
+  text-align:right;
+  font-size:12px;font-weight:700;
+  letter-spacing:0.5px;
+}
+.time-table th:first-child{border-radius:0 var(--radius-xs) var(--radius-xs) 0}
+.time-table th:last-child{border-radius:var(--radius-xs) 0 0 var(--radius-xs)}
+.time-table td{
+  padding:10px 16px;
+  border-bottom:1px solid rgba(140,97,73,0.07);
+  vertical-align:middle;
+  color:var(--text-muted);
+}
+.time-table td input{width:90px;font-size:14px;padding:7px 12px;text-align:center}
+.time-table tr:last-child td{border-bottom:none}
+.time-table tr:hover td{background:rgba(140,97,73,0.03)}
+
+/* ===== STAT CARDS ===== */
+.stat-card{
+  background:rgba(255,255,255,0.65);
+  border:1.5px solid rgba(140,97,73,0.12);
+  border-radius:var(--radius-sm);
+  padding:20px;
+  text-align:center;
+}
+.stat-num{font-size:34px;font-weight:800;color:var(--brand);line-height:1}
+.stat-label{font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.5}
+
+/* ===== ADMIN TABS ===== */
+.admin-tab{
+  padding:10px 22px;
+  border-radius:var(--radius-xs);
+  border:1.5px solid rgba(140,97,73,0.18);
+  background:rgba(255,255,255,0.55);
+  font-family:'Cairo',sans-serif;
+  font-size:13px;font-weight:600;
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.admin-tab.active,.admin-tab:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* ===== BARS ===== */
+.bar-wrap{margin:10px 0;display:flex;align-items:center;gap:12px}
+.bar-label{min-width:130px;text-align:right;font-size:13px;color:var(--text-muted)}
+.bar-bg{flex:1;height:10px;background:rgba(140,97,73,0.1);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-light),var(--brand));transition:width 0.8s ease}
+.bar-val{min-width:50px;font-size:13px;font-weight:700;color:var(--brand)}
+
+/* ===== TAGS ===== */
+.tag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.tag-high{background:rgba(194,54,54,0.1);color:#a32d2d}
+.tag-med{background:rgba(186,117,23,0.1);color:#854f0b}
+.tag-low{background:rgba(78,140,50,0.1);color:#336b1a}
+.tag-brand{background:var(--brand-ultra);color:var(--brand)}
+
+/* ===== AGENT CARDS ===== */
+.agent-card{
+  background:linear-gradient(135deg,rgba(140,97,73,0.05),rgba(140,97,73,0.02));
+  border:1.5px solid rgba(140,97,73,0.15);
+  border-radius:var(--radius-sm);
+  padding:20px 22px;
+  margin:10px 0;
+}
+.agent-icon{
+  width:40px;height:40px;
+  background:var(--brand);
+  border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+
+/* ===== DEPT PROGRESS ===== */
+.dept-bar-bg{height:7px;background:rgba(140,97,73,0.1);border-radius:99px;overflow:hidden;margin-top:5px}
+.dept-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-light),var(--brand));transition:width 1s ease}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.fade-up{animation:fadeUp 0.4s ease forwards}
+.scale-in{animation:scaleIn 0.35s ease forwards}
+
+/* ===== NAV DOTS ===== */
+.nav-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(140,97,73,0.2);
+  cursor:pointer;transition:all 0.3s;
+}
+.nav-dot.active{background:var(--brand);transform:scale(1.5)}
+.nav-dot.done{background:rgba(140,97,73,0.5)}
+
+/* ===== REVIEW ITEMS ===== */
+.review-item{
+  background:rgba(255,255,255,0.5);
+  border:1px solid rgba(140,97,73,0.1);
+  border-radius:var(--radius-sm);
+  padding:14px 18px;
+  margin:8px 0;
+}
+.review-q{font-size:12px;color:var(--text-light);margin-bottom:5px;font-weight:600}
+.review-a{font-size:14px;color:var(--text);line-height:1.7}
+
+/* ===== THANK YOU ===== */
+.thank-circle{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--brand-light),var(--brand));
+  display:flex;align-items:center;justify-content:center;
+  font-size:42px;color:#fff;
+  margin:0 auto 28px;
+  box-shadow:0 12px 40px rgba(140,97,73,0.35);
+}
+
+/* ===== LOGO ===== */
+.logo{width:70px;height:auto}
+.logo-sm{width:36px;height:auto}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(140,97,73,0.3);border-radius:99px}
+
+/* ===== GOLD QUESTION ===== */
+.gold-box{
+  background:linear-gradient(135deg,rgba(140,97,73,0.08),rgba(184,154,135,0.06));
+  border:1.5px solid rgba(140,97,73,0.3);
+  border-radius:var(--radius-sm);
+  padding:16px 20px;
+  margin-bottom:16px;
+}
+
+/* ===== CENTER WRAPPER ===== */
+.center-wrap{max-width:600px;width:100%;margin:0 auto}
+.wide-wrap{max-width:960px;width:100%;margin:0 auto}
+</style>
+</head>
+<body>
+
+<!-- ████████████ SCREEN 1: WELCOME ████████████ -->
+<div id="screen-welcome" class="screen active">
+<div class="center-wrap" style="margin:auto">
+<div class="card card-lg fade-up" style="text-align:center">
+
+  <svg class="logo" viewBox="0 0 1235.11 1080" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 24px;display:block">
+    <path d="M565.97,967.8l1.06.78,9.26-858.64-19.4,14.1,9.07,843.76Z" fill="#8C6149"/>
+    <path d="M491.5,913.66l1.2.87,9.19-750.48-19.37,14.08,8.98,735.53Z" fill="#8C6149"/>
+    <path d="M417.01,859.5l1.37.99,9.09-642.35-19.35,14.06,8.89,627.3Z" fill="#8C6149"/>
+    <path d="M342.5,805.33l1.58,1.13,9-534.21-19.33,14.03,8.74,519.05Z" fill="#8C6149"/>
+    <path d="M267.94,751.11l1.89,1.37,8.83-426.16-19.28,14.03,8.56,410.75Z" fill="#8C6149"/>
+    <path d="M947.24,755.06l9.28-6.76,19.14-387.86-49.14-35.72,20.72,430.33Z" fill="#8C6149"/>
+    <path d="M872.7,809.25l9.5-6.9,19.21-495.9-49.28-35.84,20.58,538.64Z" fill="#8C6149"/>
+    <path d="M798.21,863.4l9.62-6.97,19.3-603.98-49.4-35.94,20.48,646.89Z" fill="#8C6149"/>
+    <path d="M723.74,917.55l9.69-7.04,19.4-712.11-49.52-36.01,20.44,755.16Z" fill="#8C6149"/>
+    <path d="M649.79,971.3l8.74-6.33,19.96-820.58-49.59-36.05,20.89,862.96Z" fill="#8C6149"/>
+  </svg>
+
+  <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:var(--brand-light);margin-bottom:10px">شركة العوالي للتطوير العقاري</div>
+  <h1 style="font-size:28px;font-weight:800;color:var(--text);margin-bottom:6px;line-height:1.3">استبيان تحليل الوقت والمهام</h1>
+  <p style="font-size:14px;color:var(--text-muted);margin-bottom:28px">مبادرة بناء أدوات الذكاء الاصطناعي الداخلية</p>
+
+  <div class="divider" style="margin:20px 0"></div>
+
+  <div style="background:var(--brand-ultra);border-right:4px solid var(--brand);border-radius:var(--radius-sm);padding:22px 20px;text-align:right;margin-bottom:32px">
+    <p style="font-size:14px;line-height:2;color:var(--text)">
+      هذا الاستبيان <strong>ليس للتقييم الوظيفي</strong>، بل لفهم الواقع اليومي للعمل وبناء أدوات ذكاء اصطناعي تخفف عنك المهام المتكررة وتختصر وقتك.
+      <br>نحتاج إجابات <strong>واقعية وصريحة</strong>، وليست مثالية.
+    </p>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:28px;margin-bottom:36px;flex-wrap:wrap">
+    <div style="text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--brand)">٢٨+</div>
+      <div style="font-size:12px;color:var(--text-muted)">سؤالاً عاماً</div>
+    </div>
+    <div style="width:1px;background:rgba(140,97,73,0.15)"></div>
+    <div style="text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--brand)">١٠</div>
+      <div style="font-size:12px;color:var(--text-muted)">إدارات مخصصة</div>
+    </div>
+    <div style="width:1px;background:rgba(140,97,73,0.15)"></div>
+    <div style="text-align:center">
+      <div style="font-size:22px;font-weight:800;color:var(--brand)">٣٠</div>
+      <div style="font-size:12px;color:var(--text-muted)">دقيقة تقريباً</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-lg" onclick="goTo('screen-employee')">ابدأ الاستبيان ←</button>
+
+  <div style="margin-top:20px">
+    <button class="btn btn-text" onclick="goTo('screen-admin')">لوحة تحكم المشرف</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 2: EMPLOYEE DATA ████████████ -->
+<div id="screen-employee" class="screen">
+<div class="center-wrap" style="margin:auto;padding:12px 0">
+<div class="card card-md fade-up">
+
+  <div style="margin-bottom:28px">
+    <div class="section-label">الخطوة 1 من 3</div>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text)">بيانات الموظف</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-top:5px">معلوماتك الأساسية لتخصيص الاستبيان حسب إدارتك</p>
+  </div>
+
+  <div style="display:grid;gap:0">
+    <div class="form-group">
+      <label>الاسم الكامل *</label>
+      <input type="text" id="emp-name" placeholder="أدخل اسمك الكامل">
+    </div>
+    <div class="form-group">
+      <label>الرقم الوظيفي</label>
+      <input type="text" id="emp-id" placeholder="مثال: EMP-001">
+    </div>
+    <div class="form-group">
+      <label>المسمى الوظيفي *</label>
+      <input type="text" id="emp-title" placeholder="مثال: مدير مشاريع، مهندس تصميم...">
+    </div>
+    <div class="form-group">
+      <label>الإدارة الرئيسية *</label>
+      <select id="emp-dept">
+        <option value="">اختر إدارتك</option>
+        <option value="design">التطوير والتصميم</option>
+        <option value="finance">المالية</option>
+        <option value="investment">الاستثمار</option>
+        <option value="projects">المشاريع</option>
+        <option value="marketing">التسويق</option>
+        <option value="sales">المبيعات</option>
+        <option value="maintenance">الصيانة والتشغيل</option>
+        <option value="warranty">الضمان وما بعد التسليم</option>
+        <option value="legal">القانونية</option>
+        <option value="it">IT</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>الإدارات التي تتعامل معها بشكل متكرر (اختر كل ما ينطبق)</label>
+      <div class="chips-wrap" id="related-depts">
+        <span class="chip" onclick="toggleChip(this,'التطوير والتصميم')">التطوير والتصميم</span>
+        <span class="chip" onclick="toggleChip(this,'المالية')">المالية</span>
+        <span class="chip" onclick="toggleChip(this,'الاستثمار')">الاستثمار</span>
+        <span class="chip" onclick="toggleChip(this,'المشاريع')">المشاريع</span>
+        <span class="chip" onclick="toggleChip(this,'التسويق')">التسويق</span>
+        <span class="chip" onclick="toggleChip(this,'المبيعات')">المبيعات</span>
+        <span class="chip" onclick="toggleChip(this,'الصيانة والتشغيل')">الصيانة والتشغيل</span>
+        <span class="chip" onclick="toggleChip(this,'الضمان')">الضمان</span>
+        <span class="chip" onclick="toggleChip(this,'القانونية')">القانونية</span>
+        <span class="chip" onclick="toggleChip(this,'IT')">IT</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group">
+        <label>سنوات الخبرة في الدور الحالي</label>
+        <input type="number" id="emp-exp" placeholder="0" min="0" max="40" style="width:100%">
+      </div>
+      <div class="form-group">
+        <label>عدد أفراد الفريق المباشر</label>
+        <input type="number" id="emp-team" placeholder="0" min="0" style="width:100%">
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <button class="btn btn-ghost btn-sm" onclick="goTo('screen-welcome')">← رجوع</button>
+    <button class="btn btn-primary" onclick="startSurvey()">التالي — بدء الاستبيان ←</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 3: GENERAL SURVEY ████████████ -->
+<div id="screen-survey" class="screen">
+<div class="center-wrap" style="margin:auto;padding:12px 0">
+
+  <!-- Progress -->
+  <div style="margin-bottom:16px;padding:0 4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:13px;color:var(--text-muted)" id="prog-label">السؤال 1 من 28</div>
+      <div style="font-size:13px;font-weight:700;color:var(--brand)" id="prog-pct">0%</div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="prog-fill" style="width:4%"></div></div>
+    <div style="display:flex;gap:5px;justify-content:center;margin-top:10px" id="nav-dots"></div>
+  </div>
+
+  <!-- Question Card -->
+  <div class="card card-md fade-up" id="q-card">
+    <div class="section-label" id="q-section-label">معلومات الدور والمهام</div>
+    <div style="font-size:11px;color:var(--brand-light);margin-bottom:4px;font-weight:600" id="q-meta-label"></div>
+    <h3 style="font-size:17px;font-weight:700;color:var(--text);line-height:1.7;margin-bottom:8px" id="q-text-el"></h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px;line-height:1.6" id="q-hint-el"></p>
+    <div id="q-input-el"></div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <button class="btn btn-ghost btn-sm" onclick="prevQ()">← السابق</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-text btn-sm" onclick="saveAndContinueLater()">💾 حفظ للاحقاً</button>
+        <button class="btn btn-primary btn-sm" onclick="nextQ()">التالي ←</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 4: DEPT SURVEY ████████████ -->
+<div id="screen-dept" class="screen">
+<div class="center-wrap" style="margin:auto;padding:12px 0">
+
+  <div style="margin-bottom:16px;padding:0 4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div>
+        <span style="font-size:11px;color:var(--brand-light);font-weight:700;letter-spacing:1px">الأسئلة التخصصية</span>
+        <div style="font-size:13px;color:var(--text-muted)" id="dq-prog-label">السؤال 1</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--brand)" id="dq-prog-pct">0%</div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="dq-prog-fill" style="width:4%"></div></div>
+  </div>
+
+  <div class="card card-md fade-up" id="dq-card">
+    <div class="section-label" id="dq-section-label"></div>
+    <div style="font-size:11px;color:var(--brand-light);margin-bottom:4px;font-weight:600" id="dq-meta-label"></div>
+    <h3 style="font-size:17px;font-weight:700;color:var(--text);line-height:1.7;margin-bottom:8px" id="dq-text-el"></h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px;line-height:1.6" id="dq-hint-el"></p>
+    <div id="dq-input-el"></div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="prevDeptQ()">← السابق</button>
+      <button class="btn btn-primary btn-sm" onclick="nextDeptQ()">التالي ←</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 5: REVIEW ████████████ -->
+<div id="screen-review" class="screen">
+<div class="center-wrap" style="margin:auto;padding:12px 0">
+<div class="card card-md fade-up">
+  <div style="margin-bottom:28px">
+    <div class="section-label">مراجعة الإجابات</div>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text)">تحقق من إجاباتك قبل الإرسال</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-top:5px">يمكنك العودة للتعديل في أي وقت</p>
+  </div>
+  <div id="review-body"></div>
+  <div class="divider"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <button class="btn btn-ghost btn-sm" onclick="goBackToEdit()">← تعديل الإجابات</button>
+    <button class="btn btn-primary" onclick="submitSurvey()">✓ إرسال الاستبيان</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 6: THANK YOU ████████████ -->
+<div id="screen-thankyou" class="screen">
+<div class="center-wrap" style="margin:auto">
+<div class="card card-lg fade-up" style="text-align:center">
+  <div class="thank-circle">✓</div>
+  <h2 style="font-size:28px;font-weight:800;color:var(--text);margin-bottom:14px">شكراً لوقتك وصدقك</h2>
+  <p style="font-size:15px;color:var(--text-muted);line-height:2;margin-bottom:28px;max-width:440px;margin-left:auto;margin-right:auto">
+    إجاباتك ستُبنى عليها أدوات الذكاء الاصطناعي التي تخفف عنك المهام المتكررة وتختصر وقتك في العمل اليومي.
+  </p>
+  <div style="background:var(--brand-ultra);border-right:4px solid var(--brand);border-radius:var(--radius-sm);padding:20px;text-align:right;margin-bottom:32px">
+    <div style="font-size:12px;font-weight:800;color:var(--brand);letter-spacing:1px;margin-bottom:8px">ما التالي؟</div>
+    <p style="font-size:13px;color:var(--text-muted);line-height:1.9">
+      سيتم تحليل إجاباتك ضمن بيانات الفريق لتحديد أولى أدوات الذكاء الاصطناعي. ستُعلَم بنتائج التحليل ومراحل التطوير قريباً.
+    </p>
+  </div>
+  <button class="btn btn-primary" onclick="goTo('screen-welcome')">العودة للرئيسية</button>
+</div>
+</div>
+</div>
+
+<!-- ████████████ SCREEN 7: ADMIN DASHBOARD ████████████ -->
+<div id="screen-admin" class="screen">
+<div class="wide-wrap" style="margin:auto;padding:12px 0">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+    <svg class="logo-sm" viewBox="0 0 1235.11 1080" xmlns="http://www.w3.org/2000/svg">
+      <path d="M565.97,967.8l1.06.78,9.26-858.64-19.4,14.1,9.07,843.76Z" fill="#8C6149"/>
+      <path d="M491.5,913.66l1.2.87,9.19-750.48-19.37,14.08,8.98,735.53Z" fill="#8C6149"/>
+      <path d="M342.5,805.33l1.58,1.13,9-534.21-19.33,14.03,8.74,519.05Z" fill="#8C6149"/>
+      <path d="M872.7,809.25l9.5-6.9,19.21-495.9-49.28-35.84,20.58,538.64Z" fill="#8C6149"/>
+      <path d="M649.79,971.3l8.74-6.33,19.96-820.58-49.59-36.05,20.89,862.96Z" fill="#8C6149"/>
+    </svg>
+    <div>
+      <h1 style="font-size:20px;font-weight:800;color:var(--text)">لوحة تحكم المشرف</h1>
+      <p style="font-size:12px;color:var(--text-muted)">استبيان تحليل الوقت — العوالي للتطوير العقاري 2026</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goTo('screen-welcome')" style="margin-right:auto">← رجوع</button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+    <button class="admin-tab active" onclick="switchTab(this,'tab-overview')">نظرة عامة</button>
+    <button class="admin-tab" onclick="switchTab(this,'tab-time')">تحليل الوقت</button>
+    <button class="admin-tab" onclick="switchTab(this,'tab-tasks')">المهام والتكرار</button>
+    <button class="admin-tab" onclick="switchTab(this,'tab-agents')">فرص AI Agents</button>
+  </div>
+
+  <!-- TAB: OVERVIEW -->
+  <div id="tab-overview">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px">
+      <div class="card stat-card"><div class="stat-num">34</div><div class="stat-label">موظف أكمل الاستبيان</div></div>
+      <div class="card stat-card"><div class="stat-num">78%</div><div class="stat-label">نسبة الإنجاز الكلية</div></div>
+      <div class="card stat-card"><div class="stat-num">10</div><div class="stat-label">إدارات مشاركة</div></div>
+      <div class="card stat-card"><div class="stat-num">412</div><div class="stat-label">مهمة موثقة</div></div>
+      <div class="card stat-card"><div class="stat-num">6</div><div class="stat-label">مقترحات AI Agent</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap">
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">نسبة الإنجاز حسب الإدارة</div>
+        <div id="dept-prog-chart"></div>
+      </div>
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">الإدارات التي تسبب أكثر انتظاراً (عدد الإشارات)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="waiting-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TIME -->
+  <div id="tab-time" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">أكثر الأنشطة استهلاكاً للوقت يومياً (بالساعات)</div>
+        <div id="time-chart"></div>
+      </div>
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">أكثر التقارير اليدوية تكراراً (عدد الموظفين الذين يعدّونها)</div>
+        <div id="reports-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TASKS -->
+  <div id="tab-tasks" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">أكثر أنواع الإيميلات تكراراً</div>
+        <div id="email-chart"></div>
+      </div>
+      <div class="card card-sm" style="grid-column:span 2">
+        <div class="section-label">توزيع أنواع المهام الموثقة</div>
+        <div id="task-types-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: AGENTS -->
+  <div id="tab-agents" style="display:none">
+    <div class="card card-sm" style="margin-bottom:16px">
+      <div class="section-label">مستوى فرص الأتمتة حسب الإدارة</div>
+      <div id="automation-chart"></div>
+    </div>
+    <div class="card card-sm">
+      <div class="section-label">اقتراحات AI Agents الأولية</div>
+      <div id="agent-list"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ████████████ JAVASCRIPT ████████████ -->
+<script>
+// ===== STATE =====
+var currentScreen = 'screen-welcome';
+var currentQ = 0;
+var currentDeptQ = 0;
+var answers = {};
+var deptAnswers = {};
+var selectedRelatedDepts = [];
+var empData = {};
+
+// ===== NAVIGATION =====
+function goTo(id) {
+  var prev = document.getElementById(currentScreen);
+  prev.classList.remove('active');
+  var next = document.getElementById(id);
+  next.classList.add('active');
+  currentScreen = id;
+  if (id === 'screen-admin') renderAdmin();
+  window.scrollTo(0, 0);
+}
+
+function goBackToEdit() {
+  var dept = empData.dept;
+  if (dept && DEPT_QUESTIONS[dept] && DEPT_QUESTIONS[dept].length > 0) {
+    currentDeptQ = DEPT_QUESTIONS[dept].length - 1;
+    renderDeptQ();
+    goTo('screen-dept');
+  } else {
+    currentQ = QUESTIONS.length - 1;
+    renderQ();
+    goTo('screen-survey');
+  }
+}
+
+function toggleChip(el, val) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) {
+    if (!selectedRelatedDepts.includes(val)) selectedRelatedDepts.push(val);
+  } else {
+    selectedRelatedDepts = selectedRelatedDepts.filter(function(c){return c !== val});
+  }
+}
+
+// ===== QUESTIONS DATA =====
+var SECTIONS = [
+  {name:'معلومات الدور والمهام',qs:[0,1,2,3,4,5]},
+  {name:'خريطة اليوم الفعلية',qs:[6,7,8]},
+  {name:'المهام الروتينية والمتكررة',qs:[9,10,11,12]},
+  {name:'الإيميل والتواصل',qs:[13,14,15,16]},
+  {name:'سير العمل والتسليم',qs:[17,18,19,20,21,22]},
+  {name:'الأدوات والأنظمة',qs:[23,24,25,26]},
+  {name:'السؤال الذهبي ✦',qs:[27]}
+];
+
+var QUESTIONS = [
+  {id:'q01',text:'بكلماتك الخاصة — ما دورك في الشركة؟ وما الذي يتوقف عليك وحدك ولا يمكن أن يحدث بدونك؟',hint:'كن صريحاً وواقعياً في وصف دورك الفعلي',type:'textarea',meta:'نوع المهمة: تنسيق | مستوى الأتمتة: منخفض'},
+  {id:'q02',text:'اذكر مهامك الأساسية الرسمية — المهام التي وُظِّفت لأجلها أصلاً.',hint:'',type:'textarea',meta:'نوع المهمة: متعدد | التكرار: يومي'},
+  {id:'q03',text:'اذكر المهام الفعلية التي تجد نفسك تقوم بها يومياً — سواء كانت ضمن وصفك الوظيفي أو خارجه.',hint:'المهام خارج الوصف الوظيفي مهمة جداً لتحليل الفجوات',type:'textarea',meta:'نوع المهمة: إدخال بيانات / متابعة | التكرار: يومي'},
+  {id:'q04',text:'ما الفرق بين ما تفعله فعلاً وما يُفترض أن تفعله؟ أين يذهب وقتك بشكل لم تتوقعه؟',hint:'',type:'textarea',meta:'يكشف فجوات التوقعات مقابل الواقع'},
+  {id:'q05',text:'ما القرارات التي تتخذها بمفردك دون الرجوع لأحد؟',hint:'',type:'textarea',meta:'نوع المهمة: قرار | يحتاج تدخل بشري: نعم'},
+  {id:'q06',text:'ما القرارات التي تحتاج فيها موافقة أو مدخل من شخص آخر؟ ومن هو؟',hint:'',type:'textarea',meta:'نوع المهمة: موافقة | مستوى الأتمتة: منخفض'},
+  {id:'q07',text:'وزّع ساعات يوم عمل مثالي — ليس ما يجب أن يكون، بل ما يحدث فعلاً.',hint:'مجموع الساعات يجب أن يكون 8 ساعات تقريباً — البيانات الكمية الأهم في الاستبيان',type:'time-table',meta:'البيانات الكمية الأساسية'},
+  {id:'q08',text:'في أي وقت من اليوم تكون أكثر إنتاجية؟ وما الذي يقاطع هذا الوقت عادةً؟',hint:'',type:'textarea',meta:'يكشف نمط الإنتاجية ونقاط الانقطاع'},
+  {id:'q09',text:'ما الأيام أو الفترات التي تشعر فيها أن يومك ضاع دون إنجاز حقيقي؟ ما السبب عادةً؟',hint:'',type:'textarea',meta:'يكشف نقاط الاحتكاك والانتظار'},
+  {id:'q10',text:'ما المهام التي تؤديها بنفس الطريقة كل أسبوع دون أي تغيير؟ اذكرها بالتفصيل.',hint:'هذه المهام هي أوضح فرص الأتمتة',type:'textarea',meta:'التكرار: أسبوعي | مستوى الأتمتة: عالٍ'},
+  {id:'q11',text:'من هذه المهام — ما الذي يستغرق وقتاً لا يتناسب مع قيمته؟ ولماذا؟',hint:'',type:'textarea',meta:'أولوية أتمتة: عالية'},
+  {id:'q12',text:'هل تنقل بيانات يدوياً بين أنظمة أو ملفات مختلفة؟ أذكر التفاصيل.',hint:'',type:'multi-input',fields:['الأنظمة التي تنقل بينها','كم مرة في الأسبوع؟','كم دقيقة تستغرق كل مرة؟'],meta:'نوع المهمة: إدخال بيانات | مستوى الأتمتة: عالٍ جداً'},
+  {id:'q13',text:'ما التقارير الدورية التي تُعدها؟ اذكر اسم التقرير، كم مرة شهرياً، كم ساعة، ومن أين تجمع بياناته.',hint:'',type:'textarea',meta:'نوع المهمة: تقرير | التكرار: دوري'},
+  {id:'q14',text:'كم إيميلاً تستقبل يومياً؟ وكم منها يحتاج رداً أو إجراءً فعلياً؟',hint:'',type:'multi-input',fields:['عدد الإيميلات يومياً (تقريباً)','منها يحتاج رداً أو إجراءً فعلياً','الوقت الإجمالي للرد يومياً (بالدقائق)'],meta:'نوع المهمة: بريد | التكرار: يومي'},
+  {id:'q15',text:'ما أكثر 5 أنواع إيميلات تتكرر عليك؟ وكم وقت يأخذ الرد على كل نوع؟',hint:'',type:'textarea',meta:'نوع المهمة: بريد | مستوى الأتمتة: عالٍ'},
+  {id:'q16',text:'ما الإيميلات التي تجد نفسك تكتب فيها نفس الرد بصياغات مختلفة في كل مرة؟',hint:'هذه أوضح فرصة لبناء مسودات ذكية تلقائية',type:'textarea',meta:'أولوية أتمتة: عالية جداً'},
+  {id:'q17',text:'كم اجتماعاً تحضر أسبوعياً؟ وما نوع كل اجتماع؟',hint:'',type:'multi-input',fields:['عدد الاجتماعات أسبوعياً','كم منها ضرورية فعلاً؟','كم منها كان يمكن أن يُحسم بإيميل؟'],meta:'نوع المهمة: اجتماع | الوقت المستهلك: كثيف'},
+  {id:'q18',text:'من أين يأتيك العمل؟ (شخص، إدارة، نظام، إيميل، اجتماع)',hint:'',type:'textarea',meta:'يرسم خريطة تدفق العمل'},
+  {id:'q19',text:'ما الخطوات الكاملة التي تمر بها أي مهمة من لحظة وصولها إليك حتى تسليمها؟ اذكرها بالترتيب.',hint:'كن تفصيلياً قدر الإمكان — كل خطوة مهمة',type:'textarea',meta:'يكشف نقاط الاحتكاك في سير العمل'},
+  {id:'q20',text:'لمن تسلّم عملك عند الانتهاء؟ وبأي طريقة؟',hint:'',type:'textarea',meta:'الإدارات المرتبطة: متعددة'},
+  {id:'q21',text:'ما الإدارات التي تتقاطع معها بشكل منتظم؟ وما طبيعة هذا التقاطع؟',hint:'اختر من القائمة وأضف وصفاً',type:'dept-cross',meta:'يرسم خريطة الاعتماديات'},
+  {id:'q22',text:'ما أكثر شيء يوقف عملك ويجبرك على الانتظار؟ ومن أي إدارة يأتي هذا التوقف؟',hint:'',type:'textarea',meta:'هل تسبب تأخيراً: نعم | تعتمد على إدارة أخرى: نعم'},
+  {id:'q23',text:'عندما يتأخر رد أو موافقة — ماذا تفعل في هذا الوقت؟',hint:'',type:'textarea',meta:''},
+  {id:'q24',text:'ما الأدوات والأنظمة التي تستخدمها يومياً؟',hint:'اذكر الأنظمة والبرامج والتطبيقات والمنصات',type:'textarea',meta:''},
+  {id:'q25',text:'ما الأداة التي تقضي فيها أكثر وقت؟',hint:'',type:'text',meta:''},
+  {id:'q26',text:'ما الأداة التي تسبب لك أكثر إحباط أو تضييع وقت؟ ولماذا؟',hint:'',type:'textarea',meta:''},
+  {id:'q27',text:'هل هناك معلومة تحتاجها باستمرار ولا تجدها في مكان واحد؟ ما هي؟',hint:'',type:'textarea',meta:''},
+  {id:'q28',text:'إذا أعطيناك مساعداً ذكياً يعمل معك — ما أول 3 مهام ستطلب منه يتولاها؟ ولماذا هذه تحديداً؟',hint:'هذا السؤال هو الأهم في الاستبيان — إجابتك تحدد أول أداة ذكاء اصطناعي نبنيها لك.',type:'gold-textarea',meta:'أولوية: قصوى'}
+];
+
+var TIME_ACTS = [
+  'قراءة الإيميلات والرد عليها',
+  'إعداد التقارير والوثائق',
+  'الاجتماعات (حضوراً وتحضيراً)',
+  'التواصل مع إدارات أخرى وانتظار ردودها',
+  'نقل بيانات بين أنظمة أو ملفات',
+  'مراجعة مستندات وعقود ومخططات',
+  'متابعة مهام معلقة وتذكير الآخرين',
+  'العمل التخصصي الفعلي في صلب مهمتك',
+  'أخرى (اذكرها أدناه)'
+];
+
+var DEPT_NAMES = {
+  design:'التطوير والتصميم',finance:'المالية',investment:'الاستثمار',
+  projects:'المشاريع',marketing:'التسويق',sales:'المبيعات',
+  maintenance:'الصيانة والتشغيل',warranty:'الضمان وما بعد التسليم',
+  legal:'القانونية',it:'IT'
+};
+
+var DEPT_QUESTIONS = {
+  design:[
+    {id:'d01',section:'التطوير والتصميم — المهام الأساسية',text:'ما الناتج الرئيسي الذي تُخرجه إدارة التطوير في كل مشروع؟ اذكره بالتسلسل من البداية للنهاية.',hint:'',type:'textarea',meta:'نوع: تقرير | وقت مستهلك: كثيف'},
+    {id:'d02',section:'التطوير والتصميم — الاسكتش الأولي',text:'من لحظة وصول أرض أو فرصة جديدة — ما أول شيء تفعله قبل أن تبدأ بأي رسم؟ وكم دقيقة يأخذ؟',hint:'',type:'textarea',meta:''},
+    {id:'d03',section:'التطوير والتصميم — الاسكتش الأولي',text:'كم ساعة تستغرق لإنتاج اسكتش أولي لمشروع واحد؟ قسّمها على المراحل.',hint:'',type:'multi-input',fields:['قراءة الموقع وتحليل الأرض (بالساعات)','التفكير في توظيف المساحة (بالساعات)','الرسم الأولي الفعلي (بالساعات)','المراجعة الداخلية قبل مشاركته (بالساعات)'],meta:'وقت مستهلك: كثيف | مستوى الأتمتة: منخفض'},
+    {id:'d04',section:'التطوير والتصميم — الاسكتش الأولي',text:'ما المعلومات التي لا تستطيع البدء بالاسكتش بدونها؟ اذكرها بالترتيب حسب أهميتها.',hint:'',type:'textarea',meta:''},
+    {id:'d05',section:'التطوير والتصميم — دراسة السوق',text:'دراسة السوق — كم ساعة تستغرق؟ وما مصادرها بالترتيب؟',hint:'أين تبحث أولاً؟ ما المواقع؟ ما البيانات التي تجمعها تحديداً؟',type:'textarea',meta:'مستوى الأتمتة: متوسط-عالٍ'},
+    {id:'d06',section:'التطوير والتصميم — توظيف المساحة',text:'ما القواعد الثابتة التي تطبقها دائماً في توزيع المساحات؟ اذكر الأرقام والنسب.',hint:'مثل: نسبة البناء، عدد المواقف لكل وحدة، نسبة الخدمات',type:'textarea',meta:'قابلية أتمتة: عالية جداً'},
+    {id:'d07',section:'التطوير والتصميم — التنسيق',text:'مع أي إدارة تتشاور قبل إنهاء التوظيف الأولي للمساحة؟ وما الذي تحتاجه منها تحديداً؟',hint:'',type:'chips',options:['المالية','الاستثمار','المشاريع','التسويق','المبيعات','القانونية','IT'],meta:'الإدارات المرتبطة'}
+  ],
+  finance:[
+    {id:'f01',section:'المالية — التقارير الدورية',text:'ما التقارير المالية التي تُعدها بشكل دوري؟ اذكر اسم كل تقرير وتكراره والوقت الذي يستغرقه.',hint:'',type:'textarea',meta:'نوع: تقرير | التكرار: دوري | مستوى الأتمتة: عالٍ'},
+    {id:'f02',section:'المالية — الحسابات المتكررة',text:'ما الحسابات المالية التي تتكرر بنفس المنهجية في معظم المشاريع؟',hint:'هذه هي أوضح فرص الأتمتة',type:'textarea',meta:'مستوى الأتمتة: عالٍ'},
+    {id:'f03',section:'المالية — معايير ثابتة',text:'ما المعايير الثابتة في تحليلك المالي؟',hint:'مثل: نسبة العائد المقبولة، معيار قبول خطة الدفع، نسبة الانحراف المقبولة',type:'multi-input',fields:['نسبة العائد المقبولة على الاستثمار','نسبة الانحراف المقبولة قبل رفع تنبيه','معيار قبول أو رفض خطة الدفع'],meta:'قابلية أتمتة: عالية'},
+    {id:'f04',section:'المالية — الطلبات الداخلية',text:'ما الطلبات المتكررة التي تصلك من الإدارات الأخرى وتأخذ وقتك؟ وما الوقت الذي تأخذه كل منها؟',hint:'',type:'textarea',meta:'نوع: متابعة | يعتمد على إدارة أخرى: نعم'}
+  ],
+  investment:[
+    {id:'i01',section:'الاستثمار — المسؤوليات',text:'ما مسؤوليتك الكاملة في تقييم الفرص الاستثمارية؟ وما الذي يحدث إذا غبت؟',hint:'',type:'textarea',meta:''},
+    {id:'i02',section:'الاستثمار — دراسة الفرص',text:'عند وصول فرصة جديدة — ما أول 3 خطوات تفعلها فوراً؟ وكم دقيقة تأخذ كل خطوة؟',hint:'',type:'multi-input',fields:['الخطوة الأولى وزمنها بالدقائق','الخطوة الثانية وزمنها بالدقائق','الخطوة الثالثة وزمنها بالدقائق'],meta:'التكرار: حسب الحاجة'},
+    {id:'i03',section:'الاستثمار — دراسة الفرص',text:'كم ساعة تستغرق دراسة فرصة واحدة من وصولها حتى رفعها للجنة؟ وما الجزء الأبطأ فيها؟',hint:'',type:'textarea',meta:'وقت مستهلك: كثيف'},
+    {id:'i04',section:'الاستثمار — الاعتماديات',text:'ما الإدارات التي لا تكتمل دراستك بدون بيانات منها؟ وكم وقت تنتظرها في المتوسط؟',hint:'',type:'chips',options:['التطوير والتصميم','المالية','المشاريع','التسويق','المبيعات','القانونية'],meta:'يعتمد على إدارة أخرى: نعم'}
+  ],
+  projects:[
+    {id:'p01',section:'المشاريع — المسؤوليات',text:'ما مسؤوليتك الكاملة من لحظة انطلاق المشروع حتى التسليم النهائي؟',hint:'',type:'textarea',meta:''},
+    {id:'p02',section:'المشاريع — المتابعة',text:'كم مشروعاً تتابع في وقت واحد حالياً؟ وكيف توزع وقتك بينها؟',hint:'',type:'multi-input',fields:['عدد المشاريع الحالية','طريقة توزيع الوقت بين المشاريع'],meta:''},
+    {id:'p03',section:'المشاريع — المتابعة اليومية',text:'متابعة المقاول اليومية — كيف تتم؟ صف الخطوات والأدوات والوقت الذي تأخذه.',hint:'',type:'textarea',meta:'نوع: متابعة | التكرار: يومي | مستوى الأتمتة: متوسط'},
+    {id:'p04',section:'المشاريع — التقارير',text:'تقرير التقدم الأسبوعي — من أين تجمع بياناته؟ وكم خطوة يدوية حتى يصل للمستلم؟',hint:'',type:'textarea',meta:'نوع: تقرير | التكرار: أسبوعي | مستوى الأتمتة: عالٍ'},
+    {id:'p05',section:'المشاريع — التغييرات',text:'عند طلب تغيير في المشروع — ما الخطوات من لحظة الطلب حتى التنفيذ؟ وكم وقت تستغرق؟',hint:'',type:'textarea',meta:'نوع: موافقة / تنسيق | يسبب تأخيراً: نعم'}
+  ],
+  marketing:[
+    {id:'m01',section:'التسويق — المسؤوليات',text:'ما مسؤوليتك الكاملة في دورة المشروع؟ وما الناتج الذي تُخرجه في كل مرحلة؟',hint:'',type:'textarea',meta:''},
+    {id:'m02',section:'التسويق — إنتاج المحتوى',text:'قسّم وقتك الأسبوعي على أنواع المحتوى التي تنتجها. هل هيكل كل نوع ثابت؟',hint:'منشورات سوشيال، بروشور، حملات إعلانية، ردود، تقارير أداء',type:'textarea',meta:'نوع: محتوى | التكرار: أسبوعي'},
+    {id:'m03',section:'التسويق — إعادة الإنتاج',text:'ما المواد التسويقية التي تُعيد إنتاجها بنفس الهيكل في كل مشروع؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: عالٍ'},
+    {id:'m04',section:'التسويق — الاعتماد',text:'عملية اعتماد المادة التسويقية — كم خطوة تمر؟ وكم وقت من إعداد المادة حتى نشرها؟',hint:'',type:'textarea',meta:'نوع: موافقة | يسبب تأخيراً: نعم'},
+    {id:'m05',section:'التسويق — ملاحظات الإدارات',text:'ما أكثر ملاحظة تصلك من الإدارات عند مراجعة المواد وتسبب إعادة العمل؟',hint:'',type:'textarea',meta:''}
+  ],
+  sales:[
+    {id:'s01',section:'المبيعات — المسؤوليات',text:'ما مسؤوليتك الكاملة من أول استفسار حتى توقيع العقد وما بعده؟',hint:'',type:'textarea',meta:''},
+    {id:'s02',section:'المبيعات — رحلة العميل',text:'رحلة العميل — من لحظة وصول الاستفسار حتى توقيع العقد، اذكر كل خطوة وكم وقت تأخذ.',hint:'',type:'textarea',meta:'نوع: متابعة / تنسيق | وقت مستهلك: كثيف'},
+    {id:'s03',section:'المبيعات — الأسئلة المتكررة',text:'ما الأسئلة التي يكررها العملاء وتجيب عليها بنفس الإجابة في كل مرة؟',hint:'هذه أوضح فرصة لبناء FAQ ذكي أو وكيل محادثة',type:'textarea',meta:'مستوى الأتمتة: عالٍ جداً'},
+    {id:'s04',section:'المبيعات — معيار التأهيل',text:'هل لديك معيار ثابت لتصنيف العميل المحتمل؟ ما هذا المعيار تحديداً؟',hint:'',type:'textarea',meta:'قابلية أتمتة: متوسطة'},
+    {id:'s05',section:'المبيعات — التقارير',text:'تقرير المبيعات الأسبوعي — من أين تجمع أرقامه؟ وكم دقيقة تستغرق كل خطوة فيه؟',hint:'',type:'textarea',meta:'نوع: تقرير | التكرار: أسبوعي | مستوى الأتمتة: عالٍ'}
+  ],
+  maintenance:[
+    {id:'mn01',section:'الصيانة — مسار البلاغ',text:'بلاغ الصيانة — صف رحلته من لحظة وصوله حتى إغلاقه خطوة بخطوة. وأين أطول توقف في هذه الرحلة؟',hint:'',type:'textarea',meta:'نوع: متابعة | التكرار: يومي'},
+    {id:'mn02',section:'الصيانة — الأولويات',text:'هل لديك معيار ثابت لتحديد أولوية البلاغ؟',hint:'',type:'multi-input',fields:['طارئ — يُستجاب خلال كم ساعة؟','عاجل — خلال كم ساعة؟','عادي — خلال كم يوم؟'],meta:''},
+    {id:'mn03',section:'الصيانة — التكرار',text:'ما أنواع البلاغات التي تتكرر أكثر؟ وهل لها إجراء موحد أم يُعالَج كل مرة من الصفر؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: متوسط'},
+    {id:'mn04',section:'الصيانة — الوقائية',text:'الصيانة الوقائية — هل جدولها ثابت لكل نوع معدة؟ وكيف تتابع تنفيذه؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: عالٍ'}
+  ],
+  warranty:[
+    {id:'w01',section:'الضمان — المسؤوليات',text:'ما مسؤوليتك الكاملة في مرحلة ما بعد التسليم؟ وكم مشروعاً تتابع ضمانه حالياً؟',hint:'',type:'textarea',meta:''},
+    {id:'w02',section:'الضمان — مسار البلاغ',text:'بلاغ الضمان — من لحظة وصوله حتى إغلاقه، ما الخطوات؟ وأين التأخير الأكبر؟',hint:'',type:'textarea',meta:'نوع: متابعة | يسبب تأخيراً: نعم'},
+    {id:'w03',section:'الضمان — التكرار',text:'ما البلاغات التي تتكرر بشكل لافت؟ وهل هناك توثيق لهذا التكرار؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: عالٍ'},
+    {id:'w04',section:'الضمان — ردود متكررة',text:'ما ردود الضمان التي تكتبها للعميل بنفس الصياغة في كل مرة؟',hint:'هذه أوضح فرصة لقوالب ردود ذكية',type:'textarea',meta:'أولوية أتمتة: عالية جداً'},
+    {id:'w05',section:'الضمان — التصعيد',text:'ما الحالات التي تستوجب تصعيداً فورياً للإدارة العليا؟ هل لها معيار واضح؟',hint:'',type:'textarea',meta:'نوع: موافقة | يحتاج تدخل بشري: نعم'}
+  ],
+  legal:[
+    {id:'l01',section:'القانونية — المستندات',text:'ما أنواع المستندات والعقود التي تتعامل معها بشكل منتظم؟ رتّبها من الأكثر تكراراً.',hint:'',type:'textarea',meta:''},
+    {id:'l02',section:'القانونية — إعداد الخطابات',text:'خطاب قانوني روتيني — كم ساعة تستغرق في إعداده؟ قسّمها.',hint:'',type:'multi-input',fields:['جمع المعلومات والمستندات (بالساعات)','الصياغة الفعلية (بالساعات)','المراجعة الداخلية (بالساعات)','الاعتماد والإرسال (بالساعات)'],meta:'وقت مستهلك: كثيف'},
+    {id:'l03',section:'القانونية — القوالب المتكررة',text:'ما الخطابات التي تتكرر في كل مشروع وتكاد تكون نفسها مع تغيير بسيط في الأسماء والأرقام؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: عالٍ جداً'},
+    {id:'l04',section:'القانونية — مراجعة العقود',text:'عقد البيع — ما البنود التي تراجعها أولاً في كل عقد؟ هل لديك قائمة تحقق ثابتة؟',hint:'',type:'textarea',meta:'قابلية أتمتة: متوسطة'},
+    {id:'l05',section:'القانونية — الاستشارات',text:'كم استشارة قانونية داخلية تستقبل أسبوعياً؟ وما أكثر 5 أسئلة تتكرر؟',hint:'',type:'textarea',meta:'مستوى الأتمتة: متوسط-عالٍ'}
+  ],
+  it:[
+    {id:'it01',section:'IT — البنية التقنية',text:'ما الأنظمة التي تديرها وتتابع استقرارها يومياً؟',hint:'',type:'textarea',meta:''},
+    {id:'it02',section:'IT — الدعم اليومي',text:'ما الطلبات المتكررة التي تصلك من الإدارات؟ وكم وقتاً تأخذ منك أسبوعياً؟',hint:'',type:'textarea',meta:'نوع: دعم | التكرار: يومي | مستوى الأتمتة: عالٍ'},
+    {id:'it03',section:'IT — فرص الأتمتة',text:'ما المهام التي تشعر أنها يجب أن تكون أوتوماتيكية لكنها لا تزال يدوية؟',hint:'هذه أولويتك في تحديد ما نبنيه أولاً',type:'textarea',meta:'مستوى الأتمتة: عالٍ جداً'},
+    {id:'it04',section:'IT — الأعطال المتكررة',text:'ما الأعطال أو الطلبات التي تتكرر أكثر من غيرها؟',hint:'',type:'textarea',meta:'التكرار: دوري | قابل للأتمتة'},
+    {id:'it05',section:'IT — شكاوى الأنظمة',text:'ما الأنظمة التي تسمع أكثر شكاوى منها من الموظفين؟',hint:'',type:'textarea',meta:''}
+  ]
+};
+
+// ===== SURVEY LOGIC =====
+function startSurvey() {
+  var name = document.getElementById('emp-name').value.trim();
+  var dept = document.getElementById('emp-dept').value;
+  if (!name) { alert('الرجاء إدخال الاسم الكامل'); return; }
+  if (!dept) { alert('الرجاء اختيار الإدارة الرئيسية'); return; }
+
+  var deptSel = document.getElementById('emp-dept');
+  empData = {
+    name: name,
+    empId: document.getElementById('emp-id').value,
+    title: document.getElementById('emp-title').value,
+    dept: dept,
+    deptName: deptSel.options[deptSel.selectedIndex].text,
+    relatedDepts: selectedRelatedDepts.slice(),
+    exp: document.getElementById('emp-exp').value,
+    teamSize: document.getElementById('emp-team').value
+  };
+
+  currentQ = 0;
+  renderQ();
+  buildNavDots();
+  goTo('screen-survey');
+}
+
+function getSectionName(qIdx) {
+  for (var i = 0; i < SECTIONS.length; i++) {
+    if (SECTIONS[i].qs.indexOf(qIdx) !== -1) return SECTIONS[i].name;
+  }
+  return '';
+}
+
+function buildNavDots() {
+  var wrap = document.getElementById('nav-dots');
+  wrap.innerHTML = '';
+  SECTIONS.forEach(function(s, i) {
+    var d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.title = s.name;
+    wrap.appendChild(d);
+  });
+}
+
+function updateNavDots() {
+  var dots = document.querySelectorAll('.nav-dot');
+  var activeSection = -1;
+  for (var i = 0; i < SECTIONS.length; i++) {
+    if (SECTIONS[i].qs.indexOf(currentQ) !== -1) { activeSection = i; break; }
+  }
+  dots.forEach(function(d, i) {
+    d.className = 'nav-dot' + (i === activeSection ? ' active' : i < activeSection ? ' done' : '');
+  });
+}
+
+function renderQ() {
+  var q = QUESTIONS[currentQ];
+  var total = QUESTIONS.length;
+  var pct = Math.round((currentQ / total) * 100);
+  document.getElementById('prog-label').textContent = 'السؤال ' + (currentQ + 1) + ' من ' + total;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('q-section-label').textContent = getSectionName(currentQ);
+  document.getElementById('q-meta-label').textContent = q.meta || '';
+  document.getElementById('q-text-el').textContent = q.text;
+  document.getElementById('q-hint-el').textContent = q.hint || '';
+
+  var area = document.getElementById('q-input-el');
+  area.innerHTML = '';
+  buildInput(area, q, 'ans_' + q.id, answers);
+
+  updateNavDots();
+  animateCard('q-card');
+}
+
+function animateCard(id) {
+  var c = document.getElementById(id);
+  if (!c) return;
+  c.style.opacity = '0'; c.style.transform = 'translateY(14px)';
+  setTimeout(function() {
+    c.style.transition = 'opacity 0.35s ease,transform 0.35s ease';
+    c.style.opacity = '1'; c.style.transform = 'translateY(0)';
+  }, 20);
+}
+
+function buildInput(container, q, key, store) {
+  if (q.type === 'textarea') {
+    var ta = document.createElement('textarea');
+    ta.placeholder = 'اكتب إجابتك هنا...';
+    ta.value = store[key] || '';
+    ta.addEventListener('input', function() { store[key] = ta.value; autoSave(); });
+    container.appendChild(ta);
+  } else if (q.type === 'gold-textarea') {
+    var gb = document.createElement('div');
+    gb.className = 'gold-box';
+    gb.innerHTML = '<div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;letter-spacing:0.5px">✦ هذا السؤال هو الأهم في الاستبيان</div><p style="font-size:13px;color:var(--text-muted);line-height:1.7">إجابتك تحدد أول أداة ذكاء اصطناعي نبنيها لك شخصياً.</p>';
+    container.appendChild(gb);
+    var ta2 = document.createElement('textarea');
+    ta2.placeholder = 'المهمة الأولى:\nالمهمة الثانية:\nالمهمة الثالثة:';
+    ta2.style.minHeight = '140px';
+    ta2.value = store[key] || '';
+    ta2.addEventListener('input', function() { store[key] = ta2.value; autoSave(); });
+    container.appendChild(ta2);
+  } else if (q.type === 'text') {
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.placeholder = 'اكتب إجابتك...';
+    inp.value = store[key] || '';
+    inp.addEventListener('input', function() { store[key] = inp.value; autoSave(); });
+    container.appendChild(inp);
+  } else if (q.type === 'multi-input') {
+    var wrap = document.createElement('div');
+    wrap.style.display = 'grid'; wrap.style.gap = '14px';
+    q.fields.forEach(function(f, i) {
+      var fg = document.createElement('div');
+      fg.className = 'form-group'; fg.style.marginBottom = '0';
+      var lbl = document.createElement('label');
+      lbl.textContent = f;
+      var inp2 = document.createElement('input');
+      inp2.type = 'text'; inp2.placeholder = 'أدخل هنا...';
+      var sk = key + '_f' + i;
+      inp2.value = store[sk] || '';
+      inp2.addEventListener('input', function() { store[sk] = inp2.value; autoSave(); });
+      fg.appendChild(lbl); fg.appendChild(inp2);
+      wrap.appendChild(fg);
+    });
+    container.appendChild(wrap);
+  } else if (q.type === 'time-table') {
+    var tbl = document.createElement('table');
+    tbl.className = 'time-table';
+    var thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>النشاط</th><th style="width:130px;text-align:center">الوقت (ساعات)</th></tr>';
+    tbl.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    TIME_ACTS.forEach(function(act, i) {
+      var tr = document.createElement('tr');
+      var td1 = document.createElement('td'); td1.textContent = act;
+      var td2 = document.createElement('td'); td2.style.textAlign = 'center';
+      var inp3 = document.createElement('input');
+      inp3.type = 'number'; inp3.min = '0'; inp3.max = '8'; inp3.step = '0.5';
+      inp3.placeholder = '0';
+      var sk = key + '_t' + i;
+      inp3.value = store[sk] || '';
+      inp3.addEventListener('input', function() { store[sk] = inp3.value; autoSave(); });
+      td2.appendChild(inp3);
+      tr.appendChild(td1); tr.appendChild(td2);
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    container.appendChild(tbl);
+  } else if (q.type === 'chips' || q.type === 'dept-cross') {
+    var opts = q.options || ['التطوير والتصميم','المالية','الاستثمار','المشاريع','التسويق','المبيعات','الصيانة','الضمان','القانونية','IT'];
+    var cw = document.createElement('div'); cw.className = 'chips-wrap';
+    var sel = store[key] || [];
+    opts.forEach(function(opt) {
+      var chip = document.createElement('span');
+      chip.className = 'chip' + (sel.indexOf(opt) !== -1 ? ' selected' : '');
+      chip.textContent = opt;
+      chip.onclick = function() {
+        chip.classList.toggle('selected');
+        var cur = store[key] || [];
+        if (chip.classList.contains('selected')) { if (cur.indexOf(opt) === -1) cur.push(opt); }
+        else { cur = cur.filter(function(c) { return c !== opt; }); }
+        store[key] = cur; autoSave();
+      };
+      cw.appendChild(chip);
+    });
+    container.appendChild(cw);
+    if (q.type === 'dept-cross') {
+      var ta3 = document.createElement('textarea');
+      ta3.placeholder = 'أضف وصفاً لطبيعة التقاطع مع كل إدارة...';
+      ta3.style.marginTop = '14px';
+      var descKey = key + '_desc';
+      ta3.value = store[descKey] || '';
+      ta3.addEventListener('input', function() { store[descKey] = ta3.value; autoSave(); });
+      container.appendChild(ta3);
+    }
+  }
+}
+
+function nextQ() {
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQ();
+  } else {
+    var dept = empData.dept;
+    if (dept && DEPT_QUESTIONS[dept] && DEPT_QUESTIONS[dept].length > 0) {
+      currentDeptQ = 0;
+      renderDeptQ();
+      goTo('screen-dept');
+    } else {
+      renderReview();
+      goTo('screen-review');
+    }
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQ(); }
+  else { goTo('screen-employee'); }
+}
+
+function renderDeptQ() {
+  var dept = empData.dept;
+  var qs = DEPT_QUESTIONS[dept];
+  var q = qs[currentDeptQ];
+  var total = qs.length;
+  var pct = Math.round((currentDeptQ / total) * 100);
+  document.getElementById('dq-prog-label').textContent = 'سؤال تخصصي ' + (currentDeptQ + 1) + ' من ' + total;
+  document.getElementById('dq-prog-pct').textContent = pct + '%';
+  document.getElementById('dq-prog-fill').style.width = pct + '%';
+  document.getElementById('dq-section-label').textContent = q.section;
+  document.getElementById('dq-meta-label').textContent = q.meta || '';
+  document.getElementById('dq-text-el').textContent = q.text;
+  document.getElementById('dq-hint-el').textContent = q.hint || '';
+  var area = document.getElementById('dq-input-el');
+  area.innerHTML = '';
+  buildInput(area, q, 'dans_' + q.id, deptAnswers);
+  animateCard('dq-card');
+}
+
+function nextDeptQ() {
+  var dept = empData.dept;
+  var qs = DEPT_QUESTIONS[dept];
+  if (currentDeptQ < qs.length - 1) { currentDeptQ++; renderDeptQ(); }
+  else { renderReview(); goTo('screen-review'); }
+}
+
+function prevDeptQ() {
+  if (currentDeptQ > 0) { currentDeptQ--; renderDeptQ(); }
+  else { currentQ = QUESTIONS.length - 1; renderQ(); goTo('screen-survey'); }
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem('alawali_survey', JSON.stringify({
+      answers: answers, deptAnswers: deptAnswers,
+      empData: empData, currentQ: currentQ, currentDeptQ: currentDeptQ,
+      selectedRelatedDepts: selectedRelatedDepts
+    }));
+  } catch(e) {}
+}
+
+function saveAndContinueLater() {
+  autoSave();
+  alert('✓ تم حفظ إجاباتك. يمكنك إغلاق المتصفح وإكمال الاستبيان لاحقاً من نفس الجهاز.');
+}
+
+function renderReview() {
+  var html = '';
+  html += '<div class="section-label" style="margin-bottom:16px">بيانات الموظف</div>';
+  var fields = [
+    ['الاسم الكامل', empData.name],
+    ['الرقم الوظيفي', empData.empId],
+    ['المسمى الوظيفي', empData.title],
+    ['الإدارة الرئيسية', empData.deptName],
+    ['الإدارات المرتبطة', (empData.relatedDepts||[]).join('، ')],
+    ['سنوات الخبرة', empData.exp],
+    ['عدد الفريق', empData.teamSize]
+  ];
+  fields.forEach(function(f) {
+    if (f[1]) html += '<div class="review-item"><div class="review-q">' + f[0] + '</div><div class="review-a">' + f[1] + '</div></div>';
+  });
+  html += '<div class="divider"></div>';
+  html += '<div class="section-label" style="margin-bottom:16px">أبرز الإجابات</div>';
+  var keyQs = [0, 6, 9, 14, 18, 27];
+  keyQs.forEach(function(qi) {
+    var q = QUESTIONS[qi];
+    var ans = answers['ans_' + q.id];
+    if (ans && typeof ans === 'string' && ans.trim()) {
+      html += '<div class="review-item"><div class="review-q">' + q.text.substring(0, 70) + (q.text.length > 70 ? '...' : '') + '</div><div class="review-a">' + ans.substring(0, 150) + (ans.length > 150 ? '...' : '') + '</div></div>';
+    }
+  });
+  document.getElementById('review-body').innerHTML = html;
+}
+
+function submitSurvey() {
+  autoSave();
+  goTo('screen-thankyou');
+}
+
+// ===== ADMIN DASHBOARD =====
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
+  btn.classList.add('active');
+  ['tab-overview', 'tab-time', 'tab-tasks', 'tab-agents'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+function renderAdmin() {
+  renderDeptProgressChart();
+  renderWaitingChart();
+  renderTimeChart();
+  renderReportsChart();
+  renderEmailChart();
+  renderTaskTypesChart();
+  renderAutomationChart();
+  renderAgentList();
+}
+
+var MOCK_DEPTS = [
+  {name:'المبيعات',pct:95,count:8},{name:'التطوير والتصميم',pct:90,count:7},
+  {name:'المشاريع',pct:85,count:6},{name:'المالية',pct:80,count:5},
+  {name:'التسويق',pct:75,count:4},{name:'القانونية',pct:60,count:3},
+  {name:'الاستثمار',pct:55,count:3},{name:'الصيانة',pct:50,count:2},
+  {name:'الضمان',pct:45,count:2},{name:'IT',pct:40,count:1}
+];
+
+function renderDeptProgressChart() {
+  var el = document.getElementById('dept-prog-chart');
+  if (!el) return;
+  var html = '';
+  MOCK_DEPTS.forEach(function(d) {
+    html += '<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text-muted)">' + d.name + '</span><span style="color:var(--brand);font-weight:700">' + d.pct + '% (' + d.count + ' موظفين)</span></div><div class="dept-bar-bg"><div class="dept-bar" style="width:' + d.pct + '%"></div></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderWaitingChart() {
+  var el = document.getElementById('waiting-chart');
+  if (!el) return;
+  var data = [
+    {name:'المالية',score:42,tag:'high',tagLabel:'تأخير عالٍ'},
+    {name:'القانونية',score:38,tag:'high',tagLabel:'تأخير عالٍ'},
+    {name:'التسويق',score:31,tag:'med',tagLabel:'متوسط'},
+    {name:'IT',score:28,tag:'med',tagLabel:'متوسط'},
+    {name:'المشاريع',score:22,tag:'low',tagLabel:'منخفض'},
+    {name:'التطوير',score:18,tag:'low',tagLabel:'منخفض'}
+  ];
+  var html = '';
+  data.forEach(function(d) {
+    html += '<div class="card" style="padding:16px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:14px;font-weight:700;color:var(--text)">' + d.name + '</span><span class="tag tag-' + d.tag + '">' + d.tagLabel + '</span></div><div style="font-size:28px;font-weight:800;color:var(--brand)">' + d.score + '<span style="font-size:12px;color:var(--text-muted);font-weight:400"> إشارة</span></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderTimeChart() {
+  var el = document.getElementById('time-chart');
+  if (!el) return;
+  var data = [
+    {label:'اجتماعات',val:2.8,max:3},{label:'إيميلات',val:2.1,max:3},
+    {label:'تقارير يدوية',val:1.9,max:3},{label:'متابعة ومراسلات',val:1.7,max:3},
+    {label:'نقل بيانات',val:1.4,max:3},{label:'مراجعة مستندات',val:1.2,max:3},
+    {label:'عمل تخصصي',val:0.9,max:3}
+  ];
+  var html = '';
+  data.forEach(function(d) {
+    var w = Math.round((d.val / d.max) * 100);
+    html += '<div class="bar-wrap"><div class="bar-label">' + d.label + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + w + '%"></div></div><div class="bar-val">' + d.val + ' س</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderReportsChart() {
+  var el = document.getElementById('reports-chart');
+  if (!el) return;
+  var data = [
+    {label:'تقرير التقدم الأسبوعي',val:28},{label:'التقرير المالي الشهري',val:22},
+    {label:'تقرير المبيعات',val:20},{label:'تقرير الصيانة',val:15},
+    {label:'تقرير الضمان',val:12},{label:'تقرير لجان الاستثمار',val:9}
+  ];
+  var html = '';
+  data.forEach(function(d) {
+    var w = Math.round((d.val / 28) * 100);
+    html += '<div class="bar-wrap"><div class="bar-label" style="min-width:160px">' + d.label + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + w + '%"></div></div><div class="bar-val">' + d.val + ' موظف</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderEmailChart() {
+  var el = document.getElementById('email-chart');
+  if (!el) return;
+  var data = [
+    {label:'طلبات موافقة وتصديق',val:85,tag:'high'},{label:'استفسارات عملاء',val:72,tag:'high'},
+    {label:'تنسيق داخلي بين إدارات',val:68,tag:'high'},{label:'تقارير حالة دورية',val:54,tag:'med'},
+    {label:'طلبات مستندات',val:48,tag:'med'},{label:'متابعة مهام معلقة',val:44,tag:'med'},
+    {label:'إشعارات تعاقدية',val:32,tag:'low'}
+  ];
+  var html = '';
+  data.forEach(function(d) {
+    var w = Math.round((d.val / 85) * 100);
+    var tl = d.tag==='high'?'أتمتة عالية':d.tag==='med'?'أتمتة متوسطة':'أتمتة منخفضة';
+    html += '<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><div style="min-width:160px;font-size:13px;color:var(--text-muted)">' + d.label + '</div><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:' + w + '%"></div></div><div style="min-width:32px;font-size:13px;font-weight:700;color:var(--brand)">' + d.val + '</div><span class="tag tag-' + d.tag + '">' + tl + '</span></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderTaskTypesChart() {
+  var el = document.getElementById('task-types-chart');
+  if (!el) return;
+  var types = [
+    {label:'متابعة',val:95},{label:'بريد',val:88},{label:'تقرير',val:82},
+    {label:'تنسيق',val:76},{label:'إدخال بيانات',val:71},{label:'اجتماع',val:68},
+    {label:'موافقة',val:62},{label:'تحليل',val:45},{label:'قرار',val:38}
+  ];
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0">';
+  types.forEach(function(t) {
+    var op = 0.35 + (t.val / 100) * 0.65;
+    html += '<div style="background:rgba(140,97,73,' + op.toFixed(2) + ');color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600">' + t.label + ' <span style="opacity:0.75;font-size:12px">(' + t.val + '%)</span></div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function renderAutomationChart() {
+  var el = document.getElementById('automation-chart');
+  if (!el) return;
+  var data = [
+    {dept:'المبيعات',score:92},{dept:'التسويق',score:88},{dept:'المشاريع',score:85},
+    {dept:'الصيانة',score:82},{dept:'IT',score:78},{dept:'الضمان',score:75},
+    {dept:'القانونية',score:65},{dept:'المالية',score:60},{dept:'الاستثمار',score:45},
+    {dept:'التطوير والتصميم',score:38}
+  ];
+  var html = '';
+  data.forEach(function(d) {
+    var tag = d.score>=75?'high':d.score>=50?'med':'low';
+    var tl = d.score>=75?'فرصة عالية':d.score>=50?'فرصة متوسطة':'فرصة محدودة';
+    html += '<div class="bar-wrap"><div class="bar-label">' + d.dept + '</div><div class="bar-bg"><div class="bar-fill" style="width:' + d.score + '%"></div></div><div class="bar-val">' + d.score + '%</div><span class="tag tag-' + tag + '">' + tl + '</span></div>';
+  });
+  el.innerHTML = html;
+}
+
+var AI_AGENTS = [
+  {icon:'📧',name:'وكيل الإيميل الذكي',dept:'جميع الإدارات',desc:'يصنف الإيميلات الواردة، يقترح ردوداً جاهزة للأنواع المتكررة، ويُذكّر بالمعلقة تلقائياً',priority:'high',saving:'2.1 ساعة/يوم'},
+  {icon:'📊',name:'وكيل التقارير التلقائية',dept:'المشاريع، المالية، المبيعات',desc:'يجمع البيانات من مصادرها ويولّد تقارير أسبوعية وشهرية تلقائياً دون تدخل يدوي',priority:'high',saving:'1.9 ساعة/يوم'},
+  {icon:'🔁',name:'وكيل نقل البيانات',dept:'IT، المشاريع، المالية',desc:'يلغي النقل اليدوي للبيانات بين الأنظمة بتوصيلها مباشرة وتحديثها في الوقت الفعلي',priority:'high',saving:'1.4 ساعة/يوم'},
+  {icon:'💬',name:'وكيل استفسارات العملاء',dept:'المبيعات، الضمان',desc:'يرد على الأسئلة المتكررة، يرسل المستندات المطلوبة، ويجدول المواعيد تلقائياً',priority:'high',saving:'1.2 ساعة/يوم'},
+  {icon:'📋',name:'وكيل متابعة المهام المعلقة',dept:'جميع الإدارات',desc:'يتابع المهام المعلقة، يرسل تذكيرات للمعنيين، ويصدر تقرير الحالة الأسبوعي',priority:'med',saving:'1.7 ساعة/يوم'},
+  {icon:'⚖️',name:'وكيل القوالب القانونية',dept:'القانونية',desc:'يولّد مسودات الخطابات والعقود المتكررة تلقائياً بإدخال بيانات بسيطة فقط',priority:'med',saving:'0.8 ساعة/يوم'}
+];
+
+function renderAgentList() {
+  var el = document.getElementById('agent-list');
+  if (!el) return;
+  var html = '';
+  AI_AGENTS.forEach(function(a) {
+    var tl = a.priority === 'high' ? 'أولوية عالية' : 'أولوية متوسطة';
+    var tc = a.priority === 'high' ? 'high' : 'med';
+    html += '<div class="agent-card"><div style="display:flex;align-items:flex-start;gap:16px"><div class="agent-icon">' + a.icon + '</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800;color:var(--text)">' + a.name + '</span><span class="tag tag-' + tc + '">' + tl + '</span></div><div style="font-size:12px;color:var(--brand-light);margin-bottom:6px;font-weight:600">' + a.dept + '</div><div style="font-size:13px;color:var(--text-muted);line-height:1.7">' + a.desc + '</div><div style="font-size:12px;color:var(--brand);margin-top:10px;font-weight:700">⏱ يوفر تقريباً ' + a.saving + '</div></div></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+// ===== LOAD SAVED DATA =====
+try {
+  var saved = localStorage.getItem('alawali_survey');
+  if (saved) {
+    var d = JSON.parse(saved);
+    if (d.answers) answers = d.answers;
+    if (d.deptAnswers) deptAnswers = d.deptAnswers;
+    if (d.empData) empData = d.empData;
+    if (d.currentQ) currentQ = d.currentQ;
+    if (d.currentDeptQ) currentDeptQ = d.currentDeptQ;
+    if (d.selectedRelatedDepts) selectedRelatedDepts = d.selectedRelatedDepts;
+  }
+} catch(e) {}
+</script>
+</body>
+</html>
